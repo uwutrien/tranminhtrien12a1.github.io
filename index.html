@@ -3,29 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Hóa Học - Trần Minh Triển 12A1</title>
+    <title>Hóa Học 12 - Trần Minh Triển 12A1</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
 
         :root {
-            --bg: #0b0e14;
-            --card: #161b22;
-            --primary: #00d2ff;
-            --correct: #00ff88;
-            --wrong: #ff4b2b;
-            --text: #ffffff;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --primary: #38bdf8;
+            --correct: #22c55e;
+            --wrong: #ef4444;
+            --text: #f1f5f9;
         }
 
         body {
             margin: 0; padding: 0;
             background: var(--bg);
             color: var(--text);
-            font-family: 'Roboto', sans-serif;
+            font-family: 'Inter', sans-serif;
             display: flex; justify-content: center; align-items: center;
             height: 100vh; overflow: hidden;
         }
@@ -36,89 +35,90 @@
             align-items: center;
             width: 90%; max-width: 800px;
             text-align: center;
+            animation: fadeIn 0.4s ease-out;
         }
 
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .active { display: flex; }
 
-        h1 { font-size: 2.5rem; color: var(--primary); margin-bottom: 5px; text-transform: uppercase; }
-        .info { font-size: 1.2rem; color: #8b949e; margin-bottom: 20px; }
+        h1 { font-size: 2rem; color: var(--primary); margin-bottom: 5px; letter-spacing: 1px; }
+        .info { font-size: 1.1rem; color: #94a3b8; margin-bottom: 20px; }
 
         .btn {
             background: var(--primary);
-            color: black; border: none;
-            padding: 15px 40px; font-size: 1.2rem; font-weight: bold;
-            border-radius: 50px; cursor: pointer;
-            transition: 0.3s; margin-top: 20px;
+            color: #000; border: none;
+            padding: 12px 35px; font-size: 1.1rem; font-weight: 700;
+            border-radius: 12px; cursor: pointer;
+            transition: 0.2s; margin-top: 20px;
         }
-        .btn:hover { transform: scale(1.1); box-shadow: 0 0 20px var(--primary); }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4); }
 
-        /* Game UI */
-        .game-header { width: 100%; display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .game-header { width: 100%; display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; }
         
         .cam-wrapper {
             position: relative;
-            width: 300px; height: 200px;
-            border: 3px solid var(--primary);
+            width: 200px; height: 140px;
+            border: 2px solid #334155;
             border-radius: 15px; overflow: hidden;
-            background: #000;
+            background: #000; transition: all 0.3s;
         }
-        video, canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: scaleX(-1); }
+        .cam-active { border-color: var(--primary); box-shadow: 0 0 20px rgba(56, 189, 248, 0.3); }
+        
+        video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
 
         .question-container {
             background: var(--card);
             padding: 20px; border-radius: 15px;
-            width: 100%; margin: 20px 0;
-            font-size: 1.4rem; min-height: 80px;
-            border-bottom: 4px solid var(--primary);
+            width: 100%; margin: 15px 0;
+            font-size: 1.25rem; min-height: 50px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            border-left: 5px solid var(--primary);
         }
 
         .options {
             display: grid; grid-template-columns: 1fr 1fr;
-            gap: 15px; width: 100%;
+            gap: 12px; width: 100%;
         }
 
         .opt {
             background: var(--card);
-            padding: 15px; border-radius: 10px;
-            border: 2px solid #30363d;
-            font-size: 1.1rem; position: relative;
-            transition: 0.2s; text-align: left;
+            padding: 16px; border-radius: 12px;
+            border: 2px solid #334155;
+            font-size: 1.05rem; position: relative;
+            transition: all 0.2s ease; text-align: left;
+            overflow: hidden; cursor: default;
         }
-        .opt.active-opt { border-color: gold; box-shadow: 0 0 15px gold; }
-        .opt.correct { background: var(--correct); color: black; border-color: var(--correct); }
-        .opt.wrong { background: var(--wrong); color: white; border-color: var(--wrong); }
+        .opt.hovered { border-color: #fbbf24; transform: scale(1.03); background: #1e293b; }
+        .opt.correct { background: var(--correct) !important; border-color: var(--correct) !important; color: white; }
+        .opt.wrong { background: var(--wrong) !important; border-color: var(--wrong) !important; color: white; }
 
         .progress-bar {
             position: absolute; bottom: 0; left: 0;
-            height: 5px; background: gold; width: 0%;
-            transition: width 0.1s linear;
+            height: 4px; background: #fbbf24; width: 0%;
+            transition: width 0.05s linear;
         }
 
         #loading-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); display: flex; flex-direction: column;
+            background: var(--bg); display: flex; flex-direction: column;
             justify-content: center; align-items: center; z-index: 100;
         }
-        
-        .status-msg { margin-top: 15px; color: var(--primary); }
     </style>
 </head>
 <body>
 
     <div id="loading-overlay">
-        <div style="font-size: 2rem;">⚡ Đang khởi tạo AI...</div>
-        <div class="status-msg" id="status">Vui lòng đợi giây lát</div>
+        <div style="font-size: 1.5rem; font-weight: bold;">Đang tải AI & Âm thanh...</div>
+        <div id="status" style="margin-top: 10px; color: var(--primary);">Vui lòng chờ giây lát</div>
     </div>
 
     <div id="start-screen" class="screen active">
-        <h1>GAME HÓA HỌC</h1>
+        <h1>GAME HÓA HỌC: KIM LOẠI</h1>
         <div class="info">Học sinh: <b>Trần Minh Triển</b> - Lớp: <b>12A1</b></div>
-        <div style="background: #161b22; padding: 20px; border-radius: 15px; text-align: left;">
-            <p>⬅️ Nghiêng Trái: Chọn A</p>
-            <p>➡️ Nghiêng Phải: Chọn B</p>
-            <p>⬆️ Ngẩng Lên: Chọn C</p>
-            <p>⬇️ Cúi Xuống: Chọn D</p>
-            <p>⏱️ Giữ 2 giây để xác nhận đáp án.</p>
+        <div style="background: #1e293b; padding: 20px; border-radius: 15px; text-align: left; font-size: 0.95rem; line-height: 1.6;">
+            🔹 <b>Nghiêng Trái:</b> Đáp án A &nbsp; | &nbsp; 🔹 <b>Nghiêng Phải:</b> Đáp án B<br>
+            🔹 <b>Ngẩng Lên:</b> Đáp án C &nbsp;&nbsp;&nbsp; | &nbsp; 🔹 <b>Cúi Xuống:</b> Đáp án D<br>
+            ⏱️ <b>Thời gian:</b> Giữ 0.8s để chọn. Có âm thanh phản hồi!
         </div>
         <button class="btn" onclick="startApp()">BẮT ĐẦU CHƠI</button>
     </div>
@@ -126,96 +126,97 @@
     <div id="game-screen" class="screen">
         <div class="game-header">
             <span id="q-count">Câu: 1/20</span>
-            <span id="score">Điểm: 0</span>
+            <span id="score" style="color: #fbbf24;">0 Điểm</span>
         </div>
         
-        <div class="cam-wrapper">
+        <div class="cam-wrapper" id="cam-box">
             <video id="input_video"></video>
-            <canvas id="output_canvas"></canvas>
         </div>
 
-        <div id="question" class="question-container">Câu hỏi sẽ hiện ở đây?</div>
+        <div id="question" class="question-container">Đang chuẩn bị...</div>
 
         <div class="options">
-            <div class="opt" id="opt-A"><span>A. </span><div class="progress-bar" id="pb-A"></div></div>
-            <div class="opt" id="opt-B"><span>B. </span><div class="progress-bar" id="pb-B"></div></div>
-            <div class="opt" id="opt-C"><span>C. </span><div class="progress-bar" id="pb-C"></div></div>
-            <div class="opt" id="opt-D"><span>D. </span><div class="progress-bar" id="pb-D"></div></div>
+            <div class="opt" id="opt-A">A. <span id="txt-A"></span><div class="progress-bar" id="pb-A"></div></div>
+            <div class="opt" id="opt-B">B. <span id="txt-B"></span><div class="progress-bar" id="pb-B"></div></div>
+            <div class="opt" id="opt-C">C. <span id="txt-C"></span><div class="progress-bar" id="pb-C"></div></div>
+            <div class="opt" id="opt-D">D. <span id="txt-D"></span><div class="progress-bar" id="pb-D"></div></div>
         </div>
     </div>
 
     <div id="result-screen" class="screen">
-        <h1>KẾT THÚC!</h1>
-        <div id="final-result" style="font-size: 1.5rem; margin: 20px;"></div>
+        <h1>KẾT QUẢ CUỐI CÙNG</h1>
+        <div id="final-result" style="font-size: 1.4rem; margin: 25px; line-height: 1.8;"></div>
         <button class="btn" onclick="location.reload()">CHƠI LẠI</button>
     </div>
 
     <script>
-        const videoElement = document.getElementById('input_video');
-        const canvasElement = document.getElementById('output_canvas');
-        const canvasCtx = canvasElement.getContext('2d');
-        const statusText = document.getElementById('status');
-        const loadingOverlay = document.getElementById('loading-overlay');
+        // --- CẤU HÌNH ÂM THANH ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(freq, type, duration, vol = 0.1) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
 
-        let currentIdx = 0;
-        let score = 0;
-        let isLocked = false;
-        let holdTimer = null;
-        let selectedKey = null;
-        let holdValue = 0;
-
-        const questions = [
-            { q: "Kim loại nào sau đây có tính dẫn điện tốt nhất?", a: "Đồng", b: "Bạc", c: "Vàng", d: "Nhôm", ans: "B" },
-            { q: "Tính chất hóa học đặc trưng của kim loại là gì?", a: "Tính khử", b: "Tính oxi hóa", c: "Tính axit", d: "Tính bazơ", ans: "A" },
-            { q: "Kim loại nào có nhiệt độ nóng chảy cao nhất?", a: "Sắt", b: "Crom", c: "Vonfram", d: "Đồng", ans: "C" },
-            { q: "Trong các kim loại sau, kim loại nào là kim loại kiềm?", a: "Mg", b: "Al", c: "Na", d: "Fe", ans: "C" },
-            { q: "Kim loại nào sau đây phản ứng được với nước ở nhiệt độ thường?", a: "Fe", b: "Cu", c: "K", d: "Ag", ans: "C" },
-            { q: "Ăn mòn điện hóa học xảy ra khi có mấy điện cực?", a: "1", b: "2", c: "3", d: "0", ans: "B" },
-            { q: "Quặng Boxit là nguyên liệu để sản xuất kim loại nào?", a: "Sắt", b: "Magiê", c: "Nhôm", d: "Đồng", ans: "C" },
-            { q: "Kim loại nào nhẹ nhất (khối lượng riêng nhỏ nhất)?", a: "Natri", b: "Kali", c: "Liti", d: "Nhôm", ans: "C" },
-            { q: "Thành phần chính của thép là gì?", a: "Sắt và Cacbon", b: "Sắt và Đồng", c: "Đồng và Kẽm", d: "Nhôm và Magie", ans: "A" },
-            { q: "Kim loại nào sau đây là kim loại dẻo nhất?", a: "Bạc", b: "Đồng", c: "Nhôm", d: "Vàng", ans: "D" },
-            { q: "Dãy hoạt động hóa học nào đúng?", a: "K > Na > Mg > Al", b: "Al > Mg > Na > K", c: "Mg > Al > K > Na", d: "Na > K > Mg > Al", ans: "A" },
-            { q: "Phương pháp thủy luyện dùng để điều chế kim loại nào?", a: "Kim loại mạnh", b: "Kim loại trung bình và yếu", c: "Chỉ kim loại kiềm", d: "Mọi kim loại", ans: "B" },
-            { q: "Kim loại nào tan được trong dung dịch NaOH?", a: "Fe", b: "Mg", c: "Al", d: "Cu", ans: "C" },
-            { q: "Hợp kim của đồng và kẽm được gọi là gì?", a: "Đồng bạch", b: "Đồng thau", c: "Thép", d: "Gang", ans: "B" },
-            { q: "Hiện tượng sắt bị gỉ trong không khí ẩm là loại ăn mòn nào?", a: "Hóa học", b: "Điện hóa", c: "Vật lý", d: "Cơ học", ans: "B" },
-            { q: "Kim loại nào phản ứng với axit HCl giải phóng khí H2?", a: "Cu", b: "Ag", c: "Zn", d: "Au", ans: "C" },
-            { q: "Cấu hình electron lớp ngoài cùng của kim loại kiềm thổ là gì?", a: "ns1", b: "ns2", c: "ns2np1", d: "ns2np2", ans: "B" },
-            { q: "Ở nhiệt độ thường, kim loại nào ở trạng thái lỏng?", a: "Thủy ngân", b: "Chì", c: "Thiếc", d: "Magiê", ans: "A" },
-            { q: "Kim loại có độ cứng lớn nhất là?", a: "Sắt", b: "Crom", c: "Đồng", d: "Bạc", ans: "B" },
-            { q: "Nhôm bền trong không khí và nước là do có màng gì bảo vệ?", a: "Al(OH)3", b: "Al2O3", c: "AlCl3", d: "AlPO4", ans: "B" }
-        ];
-
-        // Khởi tạo MediaPipe Face Mesh
-        const faceMesh = new FaceMesh({
-            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
-        });
-
-        faceMesh.setOptions({
-            maxNumFaces: 1,
-            refineLandmarks: true,
-            minDetectionConfidence: 0.5,
-            minTrackingConfidence: 0.5
-        });
-
-        faceMesh.onResults(onResults);
-
-        const camera = new Camera(videoElement, {
-            onFrame: async () => {
-                await faceMesh.send({image: videoElement});
+        const sfx = {
+            tick: () => playSound(600, 'sine', 0.1, 0.05),
+            correct: () => {
+                playSound(523.25, 'sine', 0.3); // Đô
+                setTimeout(() => playSound(659.25, 'sine', 0.4), 100); // Mi
             },
-            width: 640,
-            height: 480
-        });
-
-        // Ẩn overlay khi mọi thứ đã sẵn sàng
-        window.onload = () => {
-            statusText.innerText = "Hệ thống AI đã sẵn sàng!";
-            setTimeout(() => loadingOverlay.style.display = 'none', 1000);
+            wrong: () => playSound(150, 'sawtooth', 0.4, 0.1),
+            finish: () => {
+                [523, 659, 783, 1046].forEach((f, i) => {
+                    setTimeout(() => playSound(f, 'sine', 0.6), i * 150);
+                });
+            }
         };
 
+        const videoElement = document.getElementById('input_video');
+        const camBox = document.getElementById('cam-box');
+        let currentIdx = 0, score = 0, isLocked = false, selectedKey = null, holdValue = 0;
+        const HOLD_THRESHOLD = 15; // ~0.8 giây
+
+        const questions = [
+            { q: "Kim loại dẫn điện tốt nhất là?", a: "Bạc", b: "Đồng", c: "Vàng", d: "Sắt", ans: "A" },
+            { q: "Tính chất hóa học chung của kim loại là?", a: "Tính khử", b: "Tính oxi hóa", c: "Tính axit", d: "Tính bazơ", ans: "A" },
+            { q: "Kim loại có nhiệt độ nóng chảy cao nhất?", a: "Crom", b: "Vonfram", c: "Sắt", d: "Đồng", ans: "B" },
+            { q: "Kim loại nào là kim loại kiềm?", a: "Ca", b: "Al", c: "Li", d: "Mg", ans: "C" },
+            { q: "Kim loại phản ứng với nước ở nhiệt độ thường?", a: "Fe", b: "Cu", c: "Na", d: "Ag", ans: "C" },
+            { q: "Ăn mòn điện hóa cần tối thiểu mấy điện cực?", a: "1", b: "2", c: "3", d: "4", ans: "B" },
+            { q: "Nguyên liệu sản xuất Nhôm là quặng nào?", a: "Hematit", b: "Boxit", c: "Manhetit", d: "Pirit", ans: "B" },
+            { q: "Kim loại nhẹ nhất (khối lượng riêng nhỏ nhất)?", a: "Li", b: "Na", c: "Al", d: "K", ans: "A" },
+            { q: "Thép là hợp kim của Sắt với?", a: "Cu", b: "Zn", c: "C", d: "S", ans: "C" },
+            { q: "Kim loại dẻo nhất là?", a: "Bạc", b: "Nhôm", c: "Vàng", d: "Đồng", ans: "C" },
+            { q: "Dãy hoạt động hóa học đúng là?", a: "K, Na, Mg, Al", b: "Al, Mg, Na, K", c: "Mg, K, Al, Na", d: "Na, K, Mg, Al", ans: "A" },
+            { q: "Thủy luyện dùng điều chế kim loại nào?", a: "Mạnh", b: "Yếu và TB", c: "Kiềm", d: "Mọi loại", ans: "B" },
+            { q: "Kim loại tan được trong dung dịch NaOH?", a: "Fe", b: "Al", c: "Mg", d: "Ag", ans: "B" },
+            { q: "Đồng thau là hợp kim của Đồng và?", a: "Sn", b: "Zn", c: "Ni", d: "Al", ans: "B" },
+            { q: "Sắt bị gỉ trong không khí ẩm là ăn mòn?", a: "Hóa học", b: "Điện hóa", c: "Vật lý", d: "Sinh học", ans: "B" },
+            { q: "Kim loại giải phóng H2 khi gặp HCl?", a: "Cu", b: "Ag", c: "Mg", d: "Hg", ans: "C" },
+            { q: "Cấu hình e lớp ngoài cùng của kim loại kiềm thổ?", a: "ns1", b: "ns2", c: "ns2np1", d: "ns2np2", ans: "B" },
+            { q: "Kim loại lỏng ở nhiệt độ thường?", a: "Hg", b: "Pb", c: "Sn", d: "Zn", ans: "A" },
+            { q: "Kim loại cứng nhất là?", a: "Fe", b: "Cr", c: "W", d: "Cu", ans: "B" },
+            { q: "Nhôm bền do có màng bảo vệ là?", a: "Al(OH)3", b: "Al2O3", c: "AlCl3", d: "Al2S3", ans: "B" }
+        ];
+
+        const faceMesh = new FaceMesh({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}` });
+        faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: true, minDetectionConfidence: 0.6 });
+        faceMesh.onResults(onResults);
+
+        const camera = new Camera(videoElement, { onFrame: async () => { await faceMesh.send({image: videoElement}); }, width: 640, height: 480 });
+
+        window.onload = () => { setTimeout(() => document.getElementById('loading-overlay').style.display = 'none', 1500); };
+
         function startApp() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
             document.getElementById('start-screen').classList.remove('active');
             document.getElementById('game-screen').classList.add('active');
             camera.start();
@@ -223,118 +224,82 @@
         }
 
         function showQuestion() {
-            if (currentIdx >= questions.length) {
-                endGame();
-                return;
-            }
-            isLocked = false;
-            selectedKey = null;
-            holdValue = 0;
-            resetUI();
+            if (currentIdx >= questions.length) { endGame(); return; }
+            isLocked = false; selectedKey = null; holdValue = 0;
+            
+            document.querySelectorAll('.opt').forEach(el => {
+                el.className = 'opt';
+                el.querySelector('.progress-bar').style.width = '0%';
+            });
             
             const q = questions[currentIdx];
             document.getElementById('question').innerText = `Câu ${currentIdx+1}: ${q.q}`;
-            document.getElementById('opt-A').innerHTML = `<span>A. ${q.a}</span><div class="progress-bar" id="pb-A"></div>`;
-            document.getElementById('opt-B').innerHTML = `<span>B. ${q.b}</span><div class="progress-bar" id="pb-B"></div>`;
-            document.getElementById('opt-C').innerHTML = `<span>C. ${q.c}</span><div class="progress-bar" id="pb-C"></div>`;
-            document.getElementById('opt-D').innerHTML = `<span>D. ${q.d}</span><div class="progress-bar" id="pb-D"></div>`;
-            document.getElementById('q-count').innerText = `Câu: ${currentIdx+1}/${questions.length}`;
+            document.getElementById('txt-A').innerText = q.a;
+            document.getElementById('txt-B').innerText = q.b;
+            document.getElementById('txt-C').innerText = q.c;
+            document.getElementById('txt-D').innerText = q.d;
+            document.getElementById('q-count').innerText = `Câu: ${currentIdx+1}/20`;
         }
 
         function onResults(results) {
-            canvasCtx.save();
-            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-            
-            if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0 && !isLocked) {
-                const landmarks = results.multiFaceLandmarks[0];
-                
-                // Vẽ lưới mặt cho người dùng biết AI đang hoạt động
-                drawConnectors(canvasCtx, landmarks, FACEMESH_TESSELATION, {color: '#00d2ff33', lineWidth: 1});
+            if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+                camBox.classList.add('cam-active');
+                if (isLocked) return;
 
-                // Logic nhận diện quay đầu
-                // Điểm 1: Mũi, Điểm 234: Tai phải, Điểm 454: Tai trái (đã lật mirror)
-                const nose = landmarks[1];
-                const leftEye = landmarks[33]; 
-                const rightEye = landmarks[263];
-                const topHead = landmarks[10];
-                const bottomHead = landmarks[152];
+                const lm = results.multiFaceLandmarks[0];
+                const nose = lm[1], left = lm[33], right = lm[263], top = lm[10], bot = lm[152];
+                const h = (nose.x - left.x) / (right.x - left.x);
+                const v = (nose.y - top.y) / (bot.y - top.y);
 
-                let currentSelect = null;
+                let key = null;
+                if (h < 0.38) key = 'A';
+                else if (h > 0.62) key = 'B';
+                else if (v < 0.45) key = 'C';
+                else if (v > 0.55) key = 'D';
 
-                // Tính độ lệch
-                const horizontal = (nose.x - leftEye.x) / (rightEye.x - leftEye.x);
-                const vertical = (nose.y - topHead.y) / (bottomHead.y - topHead.y);
-
-                if (horizontal < 0.35) currentSelect = 'A'; // Quay trái
-                else if (horizontal > 0.65) currentSelect = 'B'; // Quay phải
-                else if (vertical < 0.42) currentSelect = 'C'; // Ngẩng lên
-                else if (vertical > 0.58) currentSelect = 'D'; // Cúi xuống
-
-                updateSelection(currentSelect);
-            }
-            canvasCtx.restore();
-        }
-
-        function updateSelection(key) {
-            if (key === selectedKey && key !== null) {
-                holdValue += 1.5; // Tăng thanh tiến trình
-                if (holdValue >= 100) {
-                    confirmAnswer(key);
+                if (key && key === selectedKey) {
+                    holdValue++;
+                    if (holdValue % 3 === 0) sfx.tick(); // Kêu tick nhẹ khi đang giữ
+                    document.getElementById(`pb-${key}`).style.width = (holdValue / HOLD_THRESHOLD * 100) + '%';
+                    if (holdValue >= HOLD_THRESHOLD) confirmAnswer(key);
+                } else {
+                    selectedKey = key; holdValue = 0;
+                    document.querySelectorAll('.opt').forEach(el => el.classList.remove('hovered'));
+                    document.querySelectorAll('.progress-bar').forEach(el => el.style.width = '0%');
+                    if (key) document.getElementById(`opt-${key}`).classList.add('hovered');
                 }
             } else {
-                selectedKey = key;
-                holdValue = 0;
+                camBox.classList.remove('cam-active');
             }
-            
-            resetUI();
-            if (selectedKey) {
-                document.getElementById(`opt-${selectedKey}`).classList.add('active-opt');
-                document.getElementById(`pb-${selectedKey}`).style.width = holdValue + '%';
-            }
-        }
-
-        function resetUI() {
-            ['A','B','C','D'].forEach(k => {
-                document.getElementById(`opt-${k}`).classList.remove('active-opt');
-                document.getElementById(`pb-${k}`).style.width = '0%';
-            });
         }
 
         function confirmAnswer(key) {
             isLocked = true;
-            const correctAns = questions[currentIdx].ans;
-            const optEl = document.getElementById(`opt-${key}`);
+            const ans = questions[currentIdx].ans;
+            document.getElementById(`opt-${key}`).classList.remove('hovered');
             
-            if (key === correctAns) {
-                optEl.classList.add('correct');
+            if (key === ans) {
+                document.getElementById(`opt-${key}`).classList.add('correct');
                 score += 10;
+                sfx.correct();
             } else {
-                optEl.classList.add('wrong');
-                document.getElementById(`opt-${correctAns}`).classList.add('correct');
+                document.getElementById(`opt-${key}`).classList.add('wrong');
+                document.getElementById(`opt-${ans}`).classList.add('correct');
+                sfx.wrong();
             }
             
-            document.getElementById('score').innerText = `Điểm: ${score}`;
-
-            setTimeout(() => {
-                currentIdx++;
-                showQuestion();
-            }, 2000);
+            document.getElementById('score').innerText = `${score} Điểm`;
+            setTimeout(() => { currentIdx++; showQuestion(); }, 1200);
         }
 
         function endGame() {
+            sfx.finish();
             document.getElementById('game-screen').classList.remove('active');
             document.getElementById('result-screen').classList.add('active');
-            
-            let rank = "";
-            if(score >= 180) rank = "NHÀ HÓA HỌC XUẤT SẮC 🏆";
-            else if(score >= 140) rank = "HỌC SINH GIỎI 🥇";
-            else if(score >= 100) rank = "KHÁ 👍";
-            else rank = "CẦN ÔN TẬP THÊM 📚";
-
+            let rank = score >= 180 ? "XUẤT SẮC 🏆" : (score >= 140 ? "GIỎI 🥇" : "KHÁ 👍");
             document.getElementById('final-result').innerHTML = `
-                
-                Điểm số: ${score}/200<br>
-                Xếp loại: ${rank}
+                Điểm số: <b>${score}/200</b><br>
+                Xếp loại: <b>${rank}</b>
             `;
             camera.stop();
         }
