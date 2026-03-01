@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Hóa Học - Đại Cương Về Kim Loại</title>
+    <title>Game Hóa Học - Đại Cương Về Kim Loai</title>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
@@ -20,6 +20,7 @@
             --incorrect: #ef4444;
             --hover: #eab308;
             --text: #f8fafc;
+            --info-text: #94a3b8;
         }
 
         * {
@@ -61,9 +62,28 @@
 
         h1 {
             font-size: 2.5rem;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             text-shadow: 0 0 10px var(--primary-glow);
             color: #60a5fa;
+        }
+
+        .student-info {
+            font-size: 1.1rem;
+            color: var(--info-text);
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .class-info {
+            font-size: 1rem;
+            color: var(--info-text);
+            margin-bottom: 25px;
+        }
+
+        .main-instruction {
+            margin-bottom: 30px; 
+            color: #94a3b8;
+            font-style: italic;
         }
 
         .btn {
@@ -95,6 +115,13 @@
             border: 1px solid #334155;
             width: 100%;
             max-width: 600px;
+        }
+
+        .instruction-box ul {
+            list-style-type: disc;
+            margin-left: 20px;
+            margin-top: 10px;
+            margin-bottom: 10px;
         }
 
         /* Game Screen */
@@ -161,6 +188,7 @@
             position: relative;
             overflow: hidden;
             transition: all 0.3s;
+            text-align: left;
         }
 
         .option .text {
@@ -231,7 +259,9 @@
 
     <div id="start-screen" class="screen active-screen">
         <h1>GAME HÓA HỌC<br>ĐẠI CƯƠNG VỀ KIM LOẠI</h1>
-        <p style="margin-bottom: 30px; color: #94a3b8;">Điều khiển hoàn toàn bằng khuôn mặt của bạn!</p>
+        <p class="student-info">Học sinh: Trần Minh Triển</p>
+        <p class="class-info">Lớp: 12A1</p>
+        <p class="main-instruction">Điều khiển hoàn toàn bằng khuôn mặt của bạn!</p>
         <button class="btn" onclick="showScreen('instructions-screen')">Hướng dẫn</button>
         <button class="btn" onclick="startGame()">Bắt đầu ngay</button>
     </div>
@@ -239,13 +269,13 @@
     <div id="instructions-screen" class="screen">
         <h1>HƯỚNG DẪN CHƠI</h1>
         <div class="instruction-box">
-            <p>Trò chơi sử dụng Camera để nhận diện hành động của đầu.</p><br>
+            <p>Trò chơi sử dụng Camera để nhận diện hành động của đầu.</p>
             <ul>
-                <li><strong>Nghiêng/Quay đầu sang trái:</strong> Chọn đáp án A</li>
-                <li><strong>Nghiêng/Quay đầu sang phải:</strong> Chọn đáp án B</li>
+                <li><strong>Quay đầu sang trái:</strong> Chọn đáp án A</li>
+                <li><strong>Quay đầu sang phải:</strong> Chọn đáp án B</li>
                 <li><strong>Ngẩng đầu lên:</strong> Chọn đáp án C</li>
                 <li><strong>Cúi đầu xuống:</strong> Chọn đáp án D</li>
-            </ul><br>
+            </ul>
             <p><strong>Cách chọn:</strong> Giữ nguyên tư thế trong <strong>2 giây</strong> để chốt đáp án.</p>
             <p>Mỗi câu trả lời đúng được +10 điểm. Có tổng cộng 20 câu hỏi.</p>
         </div>
@@ -301,257 +331,4 @@
             { q: "Ăn mòn hóa học là quá trình:", a: "Phát sinh dòng điện", b: "Oxi hóa - khử không sinh dòng điện", c: "Chỉ có kim loại bị khử", d: "Chỉ xảy ra ở nhiệt độ thấp", correct: "B" },
             { q: "Điều kiện để xảy ra ăn mòn điện hóa học là:", a: "Có 2 điện cực khác bản chất", b: "Cùng tiếp xúc dung dịch điện li", c: "Tiếp xúc trực tiếp hoặc gián tiếp", d: "Cả 3 điều kiện trên", correct: "D" },
             { q: "Quặng boxit được dùng để sản xuất kim loại nào?", a: "Sắt", b: "Đồng", c: "Nhôm", d: "Kẽm", correct: "C" },
-            { q: "Hợp kim là:", a: "Chất tinh khiết", b: "Dung dịch rắn của nhiều nguyên tố", c: "Chất lỏng ở nhiệt độ thường", d: "Hợp chất vô cơ", correct: "B" },
-            { q: "Sắt tây là sắt được tráng kim loại nào để chống ăn mòn?", a: "Kẽm (Zn)", b: "Thiếc (Sn)", c: "Nhôm (Al)", d: "Đồng (Cu)", correct: "B" },
-            { q: "Tôn là sắt được tráng kim loại nào?", a: "Kẽm (Zn)", b: "Thiếc (Sn)", c: "Nhôm (Al)", d: "Crom (Cr)", correct: "A" },
-            { q: "Để bảo vệ vỏ tàu biển bằng thép, người ta gắn kim loại nào ở ngoài vỏ tàu?", a: "Đồng (Cu)", b: "Kẽm (Zn)", c: "Chì (Pb)", d: "Bạc (Ag)", correct: "B" },
-            { q: "Kim loại kiềm được điều chế chủ yếu bằng phương pháp nào?", a: "Nhiệt luyện", b: "Thủy luyện", c: "Điện phân nóng chảy", d: "Điện phân dung dịch", correct: "C" }
-        ];
-
-        let currentQuestion = 0;
-        let score = 0;
-        let detector;
-        let isPlaying = false;
-        let currentAction = null;
-        let actionStartTime = 0;
-        let answered = false;
-        const HOLD_TIME = 2000; // 2 giây
-
-        const video = document.getElementById('webcam');
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const loading = document.getElementById('loading');
-
-        // Audio Context cho hiệu ứng âm thanh
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-        function playSound(type) {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            osc.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            
-            if (type === 'correct') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
-                gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.5);
-            } else if (type === 'incorrect') {
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3);
-                gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
-            }
-        }
-
-        function showScreen(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
-            document.getElementById(id).classList.add('active-screen');
-        }
-
-        async function initAI() {
-            loading.style.display = 'flex';
-            try {
-                // Setup Camera
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } });
-                video.srcObject = stream;
-                await new Promise((resolve) => { video.onloadedmetadata = resolve; });
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-
-                // Load TFJS Model
-                const model = faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh;
-                const detectorConfig = { runtime: 'tfjs', refineLandmarks: false };
-                detector = await faceLandmarksDetection.createDetector(model, detectorConfig);
-
-                loading.style.display = 'none';
-                return true;
-            } catch (error) {
-                alert('Lỗi truy cập Camera hoặc tải mô hình: ' + error.message);
-                loading.style.display = 'none';
-                return false;
-            }
-        }
-
-        async function startGame() {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            if (!detector) {
-                const success = await initAI();
-                if (!success) return;
-            }
-            
-            currentQuestion = 0;
-            score = 0;
-            isPlaying = true;
-            showScreen('game-screen');
-            loadQuestion();
-            detectLoop();
-        }
-
-        function loadQuestion() {
-            answered = false;
-            currentAction = null;
-            resetOptions();
-            
-            const q = questions[currentQuestion];
-            document.getElementById('question-text').innerText = `Câu ${currentQuestion + 1}: ${q.q}`;
-            document.querySelector('#opt-A .text').innerText = `A. ${q.a}`;
-            document.querySelector('#opt-B .text').innerText = `B. ${q.b}`;
-            document.querySelector('#opt-C .text').innerText = `C. ${q.c}`;
-            document.querySelector('#opt-D .text').innerText = `D. ${q.d}`;
-            
-            document.getElementById('progress-text').innerText = `Câu: ${currentQuestion + 1} / 20`;
-            document.getElementById('score-text').innerText = `Điểm: ${score}`;
-        }
-
-        function resetOptions() {
-            ['A', 'B', 'C', 'D'].forEach(opt => {
-                const el = document.getElementById(`opt-${opt}`);
-                el.className = 'option';
-                document.getElementById(`fill-${opt}`).style.width = '0%';
-            });
-        }
-
-        async function detectLoop() {
-            if (!isPlaying) return;
-
-            const faces = await detector.estimateFaces(video);
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            if (faces.length > 0 && !answered) {
-                const keypoints = faces[0].keypoints;
-                drawMesh(keypoints);
-                processPose(keypoints);
-            } else {
-                currentAction = null;
-                resetFills();
-            }
-
-            requestAnimationFrame(detectLoop);
-        }
-
-        function drawMesh(keypoints) {
-            ctx.fillStyle = '#3b82f6';
-            for (let i = 0; i < keypoints.length; i++) {
-                const x = keypoints[i].x;
-                const y = keypoints[i].y;
-                ctx.beginPath();
-                ctx.arc(x, y, 1, 0, 2 * Math.PI);
-                ctx.fill();
-            }
-        }
-
-        function processPose(keypoints) {
-            // Tìm Box bao quanh khuôn mặt
-            const xs = keypoints.map(p => p.x);
-            const ys = keypoints.map(p => p.y);
-            const minX = Math.min(...xs); const maxX = Math.max(...xs);
-            const minY = Math.min(...ys); const maxY = Math.max(...ys);
-
-            const noseX = keypoints[1].x;
-            const noseY = keypoints[1].y;
-
-            // Tính tỉ lệ vị trí mũi so với khung mặt
-            const horizRatio = (noseX - minX) / (maxX - minX);
-            const vertRatio = (noseY - minY) / (maxY - minY);
-
-            let detectedAction = null;
-
-            // Chú ý: Camera đã bị lật (Mirror) bằng CSS, nhưng tọa độ JS lấy từ video gốc.
-            // Khi người dùng quay mặt sang TRÁI của họ, mũi di chuyển sang PHẢI của ảnh gốc -> noseX tăng -> horizRatio > 0.65
-            if (horizRatio > 0.65) detectedAction = 'A';       // Quay/Nghiêng trái
-            else if (horizRatio < 0.35) detectedAction = 'B';  // Quay/Nghiêng phải
-            else if (vertRatio < 0.35) detectedAction = 'C';   // Ngẩng lên
-            else if (vertRatio > 0.65) detectedAction = 'D';   // Cúi xuống
-
-            handleAction(detectedAction);
-        }
-
-        function handleAction(action) {
-            if (!action) {
-                currentAction = null;
-                resetFills();
-                document.querySelectorAll('.option').forEach(el => el.classList.remove('hovered'));
-                return;
-            }
-
-            if (currentAction !== action) {
-                currentAction = action;
-                actionStartTime = Date.now();
-                document.querySelectorAll('.option').forEach(el => el.classList.remove('hovered'));
-                document.getElementById(`opt-${action}`).classList.add('hovered');
-                resetFills();
-            } else {
-                const elapsed = Date.now() - actionStartTime;
-                const progress = Math.min((elapsed / HOLD_TIME) * 100, 100);
-                document.getElementById(`fill-${action}`).style.width = `${progress}%`;
-
-                if (elapsed >= HOLD_TIME) {
-                    selectAnswer(action);
-                }
-            }
-        }
-
-        function resetFills() {
-            ['A', 'B', 'C', 'D'].forEach(opt => {
-                document.getElementById(`fill-${opt}`).style.width = '0%';
-            });
-        }
-
-        function selectAnswer(selected) {
-            answered = true;
-            resetFills();
-            const q = questions[currentQuestion];
-            const correctOpt = q.correct;
-
-            document.getElementById(`opt-${correctOpt}`).classList.add('correct');
-
-            if (selected === correctOpt) {
-                score += 10;
-                playSound('correct');
-            } else {
-                document.getElementById(`opt-${selected}`).classList.add('incorrect');
-                playSound('incorrect');
-            }
-
-            document.getElementById('score-text').innerText = `Điểm: ${score}`;
-
-            setTimeout(() => {
-                currentQuestion++;
-                if (currentQuestion < questions.length) {
-                    loadQuestion();
-                } else {
-                    endGame();
-                }
-            }, 2000);
-        }
-
-        function endGame() {
-            isPlaying = false;
-            document.getElementById('final-score').innerText = score;
-            
-            let rank = "";
-            let color = "";
-            if (score >= 180) { rank = "Nhà Hóa Học 🏆"; color = "#22c55e"; }
-            else if (score >= 140) { rank = "Học Sinh Giỏi 🌟"; color = "#3b82f6"; }
-            else if (score >= 100) { rank = "Khá 👍"; color = "#eab308"; }
-            else { rank = "Cần Ôn Tập 📚"; color = "#ef4444"; }
-
-            const rankEl = document.getElementById('final-rank');
-            rankEl.innerText = rank;
-            rankEl.style.color = color;
-
-            showScreen('result-screen');
-            // Tắt stream camera
-            if (video.srcObject) {
-                video.srcObject.getTracks().forEach(track => track.stop());
-            }
-        }
-    </script>
-</body>
-</html>
+            { q: "Hợp
