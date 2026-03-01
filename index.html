@@ -158,43 +158,32 @@ Hướng dẫn
 
 <script>
 
-const video=document.getElementById("video")
-const canvas=document.getElementById("canvas")
-const ctx=canvas.getContext("2d")
+const video = document.getElementById("video")
+const canvas = document.getElementById("canvas")
+const ctx = canvas.getContext("2d")
 
 let detector
-let score=0
-let current=0
-let selected=null
-let holdStart=null
+let score = 0
+let current = 0
+let selected = null
+let holdStart = null
 
-const questions=[
-
+const questions = [
 {q:"Kim loại có tính chất vật lí chung nào?",A:"Dẫn điện tốt",B:"Không dẫn nhiệt",C:"Không dẫn điện",D:"Tan trong nước",correct:"A"},
 {q:"Tính chất hóa học đặc trưng của kim loại là:",A:"Tính oxi hóa",B:"Tính khử",C:"Tính axit",D:"Tính bazơ",correct:"B"},
 {q:"Kim loại phản ứng mạnh với nước?",A:"Na",B:"Fe",C:"Cu",D:"Ag",correct:"A"},
 {q:"Kim loại dẫn điện tốt nhất?",A:"Cu",B:"Ag",C:"Fe",D:"Al",correct:"B"},
-{q:"Kim loại nhẹ nhất?",A:"Li",B:"Na",C:"Fe",D:"Cu",correct:"A"},
-{q:"Thép là hợp kim:",A:"Fe + C",B:"Cu + Zn",C:"Al + Cu",D:"Fe + Al",correct:"A"},
-{q:"Kim loại lỏng ở nhiệt độ thường:",A:"Hg",B:"Fe",C:"Cu",D:"Al",correct:"A"},
-{q:"Kim loại tồn tại tự do:",A:"Au",B:"Na",C:"K",D:"Ca",correct:"A"},
-{q:"Kim loại dùng làm dây điện:",A:"Cu",B:"Fe",C:"Zn",D:"Pb",correct:"A"},
-{q:"Kim loại nóng chảy cao:",A:"W",B:"Na",C:"K",D:"Hg",correct:"A"}
-
+{q:"Kim loại nhẹ nhất?",A:"Li",B:"Na",C:"Fe",D:"Cu",correct:"A"}
 ]
 
 function startGame(){
-
 menu.style.display="none"
 game.style.display="block"
-
 loadQuestion()
 initCamera()
-
 }
 
 function loadQuestion(){
-
 let q=questions[current]
 
 progress.innerText="Câu "+(current+1)+" / "+questions.length
@@ -204,23 +193,24 @@ A.innerText="A. "+q.A
 B.innerText="B. "+q.B
 C.innerText="C. "+q.C
 D.innerText="D. "+q.D
-
 }
 
 async function initCamera(){
 
-const stream=await navigator.mediaDevices.getUserMedia({
+const stream = await navigator.mediaDevices.getUserMedia({
 video:{facingMode:"user"}
 })
 
-video.srcObject=stream
+video.srcObject = stream
 
-await video.play()
+video.onloadedmetadata = async () => {
 
-canvas.width=video.videoWidth
-canvas.height=video.videoHeight
+video.play()
 
-detector=await faceLandmarksDetection.createDetector(
+canvas.width = video.videoWidth
+canvas.height = video.videoHeight
+
+detector = await faceLandmarksDetection.createDetector(
 faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh,
 {runtime:"tfjs"}
 )
@@ -229,44 +219,36 @@ detect()
 
 }
 
+}
+
 async function detect(){
 
 ctx.clearRect(0,0,canvas.width,canvas.height)
 
-const faces=await detector.estimateFaces(video)
+const faces = await detector.estimateFaces(video)
 
 if(faces.length>0){
 
-const face=faces[0]
+const face = faces[0]
 
-const pts=face.keypoints
+const nose = face.keypoints[1]
+const left = face.keypoints[33]
+const right = face.keypoints[263]
 
-const nose=pts[1]
-const left=pts[33]
-const right=pts[263]
+const centerX = (left.x+right.x)/2
+const centerY = (left.y+right.y)/2
 
-/* vẽ khung mặt */
+const dx = nose.x-centerX
+const dy = nose.y-centerY
 
-const box=face.box
+let choice = null
 
-ctx.strokeStyle="#00ffcc"
-ctx.lineWidth=3
-ctx.strokeRect(box.xMin,box.yMin,box.width,box.height)
+if(dx < -15) choice="A"
+else if(dx > 15) choice="B"
+else if(dy < -15) choice="C"
+else if(dy > 15) choice="D"
 
-/* tính góc đầu */
-
-let eyeX=(left.x+right.x)/2
-let eyeY=(left.y+right.y)/2
-
-let dx=nose.x-eyeX
-let dy=nose.y-eyeY
-
-let choice=null
-
-if(dx<-25) choice="A"
-else if(dx>25) choice="B"
-else if(dy<-20) choice="C"
-else if(dy>20) choice="D"
+drawFace(face)
 
 highlight(choice)
 
@@ -276,9 +258,25 @@ requestAnimationFrame(detect)
 
 }
 
+function drawFace(face){
+
+const box = face.box
+
+ctx.strokeStyle="#00ffcc"
+ctx.lineWidth=3
+
+ctx.strokeRect(
+box.xMin,
+box.yMin,
+box.width,
+box.height
+)
+
+}
+
 function highlight(letter){
 
-if(!letter)return
+if(!letter) return
 
 document.querySelectorAll(".answer")
 .forEach(a=>a.classList.remove("highlight"))
@@ -344,16 +342,9 @@ function endGame(){
 
 game.style.display="none"
 
-let rank="Cần ôn tập"
-
-if(score>=90) rank="Nhà hóa học"
-else if(score>=70) rank="Học sinh giỏi"
-else if(score>=50) rank="Khá"
-
 result.style.display="block"
 
-result.innerHTML=
-"🎉 Điểm của bạn: "+score+"<br><br>"+rank
+result.innerHTML="Điểm của bạn: "+score
 
 }
 
