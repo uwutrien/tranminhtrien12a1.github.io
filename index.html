@@ -3,96 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hóa Học 12 - Trần Minh Triển 12A1</title>
+    <title>Hóa Học 12: Kim Loại - Trần Minh Triển 12A1</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
 
         :root {
-            --bg: #0f172a; --card: #1e293b; --primary: #38bdf8;
-            --correct: #22c55e; --wrong: #ef4444; --text: #f1f5f9;
+            /* Cặp màu đẹp - Theme Hóa học Hiện đại */
+            --bg-color: #0b1120; /* Xanh đen đậm - Nền chính */
+            --card-color: #172a46; /* Xanh xám đậm - Thẻ câu hỏi/đáp án */
+            --primary-color: #38bdf8; /* Xanh lơ sáng - Điểm nhấn, nút, thanh tiến trình */
+            --primary-glow: rgba(56, 189, 248, 0.4); /* Hào quang xanh lơ */
+            
+            --correct-color: #10b981; /* Xanh lá cây - Đáp án đúng */
+            --correct-glow: rgba(16, 185, 129, 0.5); /* Hào quang xanh lá */
+            --wrong-color: #f43f5e; /* Đỏ hồng - Đáp án sai */
+            --wrong-glow: rgba(244, 63, 94, 0.5); /* Hào quang đỏ hồng */
+            
+            --text-main: #f1f5f9; /* Trắng xám - Chữ chính */
+            --text-sub: #94a3b8; /* Xám - Chữ phụ, thông tin */
+            --hover-color: #fbbf24; /* Vàng hổ phách - Khi di chuyển đầu đến đáp án */
         }
 
         body {
-            margin: 0; padding: 0; background: var(--bg); color: var(--text);
-            font-family: 'Inter', sans-serif; display: flex; justify-content: center;
-            align-items: center; height: 100vh; overflow: hidden;
+            margin: 0; padding: 0; 
+            background-color: var(--bg-color);
+            background-image: 
+                linear-gradient(rgba(11, 17, 32, 0.9), rgba(11, 17, 32, 0.9)),
+                url('https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?q=80&w=1920&auto=format&fit=crop'); /* Hình nền mờ dụng cụ thí nghiệm */
+            background-size: cover; background-position: center; background-attachment: fixed;
+            color: var(--text-main); font-family: 'Roboto', sans-serif;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; overflow: hidden;
         }
 
-        .screen { display: none; flex-direction: column; align-items: center; width: 90%; max-width: 800px; text-align: center; animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .screen { display: none; flex-direction: column; align-items: center; width: 92%; max-width: 850px; text-align: center; animation: fadeIn 0.5s ease-out; position: relative; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .active { display: flex; }
 
-        h1 { font-size: 1.8rem; color: var(--primary); margin-bottom: 5px; text-transform: uppercase; }
-        .info { font-size: 1.1rem; color: #94a3b8; margin-bottom: 15px; }
+        /* Icon SVG Hóa học trang trí */
+        .chem-icon { position: absolute; opacity: 0.1; pointer-events: none; z-index: -1; }
+
+        h1 { font-size: 2.2rem; font-weight: 900; color: var(--primary-color); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 0 15px var(--primary-glow); }
+        .info { font-size: 1.2rem; font-weight: 500; color: var(--text-sub); margin-bottom: 20px; }
 
         .btn {
-            background: var(--primary); color: #000; border: none; padding: 12px 40px;
-            font-size: 1.1rem; font-weight: 700; border-radius: 12px; cursor: pointer; margin-top: 15px;
-            transition: 0.2s;
+            background-color: var(--primary-color); color: #0b1120; border: none; padding: 14px 45px;
+            font-size: 1.2rem; font-weight: 700; border-radius: 50px; cursor: pointer; margin-top: 20px;
+            transition: 0.3s; box-shadow: 0 5px 15px rgba(56, 189, 248, 0.3);
+            display: flex; align-items: center; gap: 10px;
         }
-        .btn:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(56, 189, 248, 0.4); }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(56, 189, 248, 0.5); }
 
-        .game-header { width: 100%; display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; }
+        .game-header { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-weight: 700; border-bottom: 1px solid rgba(148, 163, 184, 0.2); padding-bottom: 10px; }
         
         .cam-wrapper {
-            position: relative; width: 180px; height: 130px; border: 2px solid #334155;
-            border-radius: 15px; overflow: hidden; background: #000; transition: 0.3s;
+            position: relative; width: 180px; height: 130px; border: 3px solid rgba(51, 65, 85, 0.8);
+            border-radius: 20px; overflow: hidden; background: #000; transition: 0.3s;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
         }
-        .cam-active { border-color: var(--primary); box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); }
+        .cam-active { border-color: var(--primary-color); box-shadow: 0 0 25px rgba(56, 189, 248, 0.4); }
         video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
 
         .question-container {
-            background: var(--card); padding: 25px; border-radius: 15px; width: 100%;
-            margin: 15px 0; font-size: 1.3rem; min-height: 60px; border-left: 6px solid var(--primary);
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); text-align: left;
+            background-color: var(--card-color); padding: 30px; border-radius: 20px; width: 100%;
+            margin: 20px 0; font-size: 1.4rem; min-height: 70px; border-left: 8px solid var(--primary-color);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3); text-align: left; position: relative; overflow: hidden;
         }
+        .question-container::after { content: ''; position: absolute; bottom: -20px; right: -20px; width: 100px; height: 100px; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2338bdf8" opacity="0.1"><path d="M19 6V5a3 3 0 0 0-3-3H8a3 3 0 0 0-3 3v1a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3V9a3 3 0 0 0-3-3m-1-1v1H6V5a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1M5 20V8h14v12Z"/></svg>'); background-size: contain; background-repeat: no-repeat; }
 
-        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; }
+        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; width: 100%; }
         .opt {
-            background: var(--card); padding: 18px; border-radius: 12px; border: 2px solid #334155;
-            font-size: 1.1rem; position: relative; transition: all 0.2s; text-align: left; overflow: hidden;
+            background-color: var(--card-color); padding: 20px; border-radius: 15px; border: 2px solid rgba(51, 65, 85, 0.8);
+            font-size: 1.15rem; font-weight: 500; position: relative; transition: all 0.2s ease-out; text-align: left; overflow: hidden;
+            cursor: default; box-shadow: 0 5px 10px rgba(0,0,0,0.15);
         }
-        .opt.hovered { border-color: #fbbf24; background: #1e293b; transform: translateY(-3px); }
-        .opt.correct { background: var(--correct) !important; border-color: var(--correct) !important; color: white; }
-        .opt.wrong { background: var(--wrong) !important; border-color: var(--wrong) !important; color: white; }
+        .opt.hovered { border-color: var(--hover-color); background-color: #1a3152; transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+        .opt.correct { background-color: var(--correct-color) !important; border-color: var(--correct-color) !important; color: white; box-shadow: 0 0 20px var(--correct-glow); text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+        .opt.wrong { background-color: var(--wrong-color) !important; border-color: var(--wrong-color) !important; color: white; box-shadow: 0 0 20px var(--wrong-glow); text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
 
-        .progress-bar { position: absolute; bottom: 0; left: 0; height: 5px; background: #fbbf24; width: 0%; transition: width 0.05s linear; }
+        .progress-bar { position: absolute; bottom: 0; left: 0; height: 6px; background-color: var(--hover-color); width: 0%; transition: width 0.05s linear; border-radius: 0 3px 3px 0; }
 
         #loading-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100;
+            background-color: rgba(11, 17, 32, 0.98); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100;
         }
+        .spinner { border: 4px solid rgba(56, 189, 248, 0.1); border-left-color: var(--primary-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
     <div id="loading-overlay">
-        <div style="font-size: 1.5rem; font-weight: bold;">Đang tải AI & Âm thanh...</div>
-        <div style="color: var(--primary); margin-top: 10px;">Vui lòng chờ giây lát</div>
+        <div class="spinner"></div>
+        <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);">Đang khởi tạo phòng thí nghiệm...</div>
+        <div style="color: var(--primary-color); margin-top: 10px;">Vui lòng chờ giây lát</div>
     </div>
 
     <div id="start-screen" class="screen active">
-        <h1>HÓA HỌC 12: KIM LOẠI</h1>
+        <svg class="chem-icon" style="top: -50px; left: -50px; width: 150px; height: 150px;" viewBox="0 0 24 24"><path fill="currentColor" d="M19,6V5A3,3,0,0,0,16,2H8A3,3,0,0,0,5,5V6A3,3,0,0,0,2,9V19a3,3,0,0,0,3,3H19a3,3,0,0,0,3-3V9A3,3,0,0,0,19,6ZM8,4h8a1,1,0,0,1,1,1V6H7V5A1,1,0,0,1,8,4ZM20,19a1,1,0,0,1-1,1H5a1,1,0,0,1-1-1V9A1,1,0,0,1,5,8H19a1,1,0,0,1,1,1Z"/></svg>
+
+        <h1>GAME HÓA HỌC: KIM LOẠI</h1>
         <div class="info">Học sinh: <b>Trần Minh Triển</b> - Lớp: <b>12A1</b></div>
-        <div style="background: #1e293b; padding: 20px; border-radius: 15px; text-align: left; font-size: 0.95rem; line-height: 1.6;">
-            ⬅️ <b>Nghiêng Trái:</b> Đáp án A &nbsp; | &nbsp; ➡️ <b>Nghiêng Phải:</b> Đáp án B<br>
-            ⬆️ <b>Ngẩng Lên:</b> Đáp án C &nbsp;&nbsp;&nbsp; | &nbsp; ⬇️ <b>Cúi Xuống:</b> Đáp án D<br>
-            🛡️ <b>Chống nhiễu:</b> Ngồi yên máy sẽ không tự chọn. Giữ 0.9s để chốt.
+        
+        <div style="width: 100%; max-width: 400px; margin: 20px 0; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <img src="https://images.unsplash.com/photo-1614728894747-a83421e2b9c9?q=80&w=600&auto=format&fit=crop" alt="Cấu trúc mạng tinh thể kim loại" style="width: 100%; height: auto; display: block;">
         </div>
-        <button class="btn" onclick="startApp()">BẮT ĐẦU CHƠI</button>
+
+        <div style="background-color: rgba(23, 42, 70, 0.7); padding: 25px; border-radius: 18px; text-align: left; font-size: 1rem; line-height: 1.7; border: 1px solid rgba(148, 163, 184, 0.1); backdrop-filter: blur(5px);">
+            <div style="display: flex; gap: 15px; margin-bottom: 10px; align-items: center;"><span style="color: var(--hover-color); font-weight: 700;">⬅️ NGHIÊNG TRÁI:</span> Chọn A</div>
+            <div style="display: flex; gap: 15px; margin-bottom: 10px; align-items: center;"><span style="color: var(--hover-color); font-weight: 700;">➡️ NGHIÊNG PHẢI:</span> Chọn B</div>
+            <div style="display: flex; gap: 15px; margin-bottom: 10px; align-items: center;"><span style="color: var(--hover-color); font-weight: 700;">⬆️ NGẮNG LÊN:</span> Chọn C</div>
+            <div style="display: flex; gap: 15px; align-items: center;"><span style="color: var(--hover-color); font-weight: 700;">⬇️ CÚI XUỐNG:</span> Chọn D</div>
+            <div style="margin-top: 15px; color: var(--text-sub); font-style: italic;">🛡️ Chống nhiễu: Ngồi yên máy sẽ không tự chọn. Giữ 0.9s để chốt.</div>
+        </div>
+        <button class="btn" onclick="startApp()">
+            <svg style="width: 24px; height: 24px;" viewBox="0 0 24 24"><path fill="currentColor" d="M12,2A10,10,0,1,0,22,12,10.011,10.011,0,0,0,12,2Zm0,18a8,8,0,1,1,8-8A8.009,8.009,0,0,1,12,20Zm-2-12v8l6-4Z"/></svg>
+            BẮT ĐẦU PHÂN TÍCH
+        </button>
     </div>
 
     <div id="game-screen" class="screen">
         <div class="game-header">
             <span id="q-count">Câu: 1/20</span>
-            <span id="score" style="color: #fbbf24;">0 Điểm</span>
+            <span id="score" style="color: var(--hover-color); font-size: 1.3rem;">0 Điểm</span>
         </div>
         <div class="cam-wrapper" id="cam-box"><video id="input_video"></video></div>
-        <div id="question" class="question-container">Đang tải câu hỏi...</div>
+        <div id="question" class="question-container">Đang tải dữ liệu câu hỏi...</div>
         <div class="options">
             <div class="opt" id="opt-A">A. <span id="txt-A"></span><div class="progress-bar" id="pb-A"></div></div>
             <div class="opt" id="opt-B">B. <span id="txt-B"></span><div class="progress-bar" id="pb-B"></div></div>
@@ -102,9 +142,18 @@
     </div>
 
     <div id="result-screen" class="screen">
-        <h1>HOÀN THÀNH BÀI TẬP</h1>
-        <div id="final-result" style="font-size: 1.4rem; margin: 25px; line-height: 2;"></div>
-        <button class="btn" onclick="location.reload()">CHƠI LẠI</button>
+        <svg class="chem-icon" style="bottom: -30px; right: -30px; width: 120px; height: 120px;" viewBox="0 0 24 24"><path fill="currentColor" d="M19,2a1,1,0,0,0-1,1V5H6V3A1,1,0,0,0,4,3V21a1,1,0,0,0,2,0V19H18v2a1,1,0,0,0,2,0V3A1,1,0,0,0,19,2ZM18,17H6V7H18Z"/></svg>
+
+        <h1>PHÂN TÍCH HOÀN TẤT</h1>
+        <div style="width: 100%; max-width: 300px; margin: 15px 0; border-radius: 15px; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.4);">
+            <img src="https://images.unsplash.com/photo-1518152006812-edab29b069ac?q=80&w=400&auto=format&fit=crop" alt="Bảng tuần hoàn các nguyên tố hóa học" style="width: 100%; height: auto; display: block;">
+        </div>
+        
+        <div id="final-result" style="font-size: 1.5rem; font-weight: 700; background-color: rgba(23, 42, 70, 0.7); padding: 30px; border-radius: 20px; width: 100%; margin: 15px 0; border: 1px solid rgba(148, 163, 184, 0.1); backdrop-filter: blur(5px); line-height: 1.8;"></div>
+        <button class="btn" onclick="location.reload()">
+            <svg style="width: 24px; height: 24px;" viewBox="0 0 24 24"><path fill="currentColor" d="M17.65,6.35A8,8,0,1,0,20.12,11H17.65A6,6,0,1,1,16,8H13v3l5,0,0-5L15,6A7.926,7.926,0,0,0,17.65,6.35Z"/></svg>
+            TÁI TẠO QUÁ TRÌNH
+        </button>
     </div>
 
     <script>
@@ -161,7 +210,7 @@
 
         const camera = new Camera(videoElement, { onFrame: async () => { await faceMesh.send({image: videoElement}); }, width: 640, height: 480 });
 
-        window.onload = () => { setTimeout(() => document.getElementById('loading-overlay').style.display='none', 1000); };
+        window.onload = () => { setTimeout(() => document.getElementById('loading-overlay').style.display='none', 1500); };
 
         function startApp() {
             if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -243,8 +292,8 @@
             document.getElementById('result-screen').classList.add('active');
             let r = score >= 180 ? "XUẤT SẮC 🏆" : (score >= 140 ? "GIỎI 🥇" : "KHÁ 👍");
             document.getElementById('final-result').innerHTML = `
-                Điểm số: <b>${score}/200</b><br>
-                Xếp loại: <b>${r}</b>
+                Điểm số: <span style="color: var(--primary-color); font-size: 2rem;">${score}/200</span><br>
+                Xếp loại: <span style="color: ${score >= 140 ? 'var(--correct-color)' : 'var(--wrong-color)'};">${r}</span>
             `;
             camera.stop();
         }
