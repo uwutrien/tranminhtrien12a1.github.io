@@ -17,21 +17,21 @@
             --chem-purple: #a855f7;
             --chem-amber: #fbbf24;
             --bg-deep: #060b18;
+            --danger: #ff3366;
         }
 
-        /* HỖ TRỢ TRƯỢT TRANG */
         html, body { 
             min-height: 100vh; overflow-y: auto; overflow-x: hidden;
             scroll-behavior: smooth; background: var(--bg-deep);
             color: #e2e8f0; font-family: 'Space Grotesk', sans-serif;
+            margin: 0;
         }
 
-        /* HIỆU ỨNG NỀN PHÒNG THÍ NGHIỆM */
         .lab-bg {
             position: fixed; inset: 0; z-index: -1;
             background-image: 
-                radial-gradient(circle at 10% 10%, rgba(34, 211, 238, 0.05) 0%, transparent 30%),
-                radial-gradient(circle at 90% 90%, rgba(168, 85, 247, 0.05) 0%, transparent 30%);
+                radial-gradient(circle at 10% 10%, rgba(34, 211, 238, 0.08) 0%, transparent 30%),
+                radial-gradient(circle at 90% 90%, rgba(168, 85, 247, 0.08) 0%, transparent 30%);
             opacity: 0.8;
         }
 
@@ -39,46 +39,55 @@
             display: none; flex-direction: column; align-items: center;
             width: 90%; max-width: 900px; margin: 40px auto;
             padding: 40px; border-radius: 30px;
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(20px);
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(25px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
         }
         .active { display: flex; }
 
-        /* RADAR CAMERA CỐ ĐỊNH */
+        /* RADAR PANEL CẢI TIẾN - CÓ HỒNG TÂM */
         .radar-panel {
             position: fixed; top: 20px; right: 20px; z-index: 100;
-            width: 160px; border-radius: 15px; overflow: hidden;
+            width: 180px; border-radius: 15px; overflow: hidden;
             border: 2px solid var(--chem-cyan); background: #000;
-            box-shadow: 0 0 20px rgba(34, 211, 238, 0.3);
+            box-shadow: 0 0 25px rgba(34, 211, 238, 0.4);
         }
-        video { width: 100%; height: 120px; object-fit: cover; transform: scaleX(-1); }
+        .cam-wrapper { position: relative; width: 100%; height: 135px; }
+        video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        
+        /* Hồng tâm hiển thị vị trí mũi */
+        #target-dot {
+            position: absolute; width: 12px; height: 12px;
+            background: var(--danger); border: 2px solid #fff;
+            border-radius: 50%; pointer-events: none;
+            transform: translate(-50%, -50%); transition: 0.1s;
+            box-shadow: 0 0 10px var(--danger); z-index: 101;
+            display: none;
+        }
+
         .radar-label { 
             font-size: 10px; text-align: center; background: var(--chem-cyan); 
-            color: #000; font-weight: 700; padding: 2px 0; font-family: 'Fira Code';
+            color: #000; font-weight: 700; padding: 4px 0; font-family: 'Fira Code';
         }
 
         h1 {
-            font-weight: 700; font-size: 2.5rem; letter-spacing: -1px;
-            background: linear-gradient(to right, var(--chem-cyan), var(--chem-purple));
+            font-weight: 700; font-size: 2.4rem; letter-spacing: -1px;
+            background: linear-gradient(to right, var(--chem-cyan), #fff, var(--chem-purple));
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             margin: 0; text-align: center;
         }
 
-        /* PHẦN HƯỚNG DẪN MỚI */
         .tutorial-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px; width: 100%; margin: 30px 0;
         }
         .step-card {
             background: rgba(255,255,255,0.03); padding: 20px; border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.1); transition: 0.3s;
+            border: 1px solid rgba(255,255,255,0.1); position: relative;
         }
-        .step-card:hover { border-color: var(--chem-cyan); transform: translateY(-5px); }
-        .step-num { color: var(--chem-cyan); font-family: 'Fira Code'; font-weight: 700; margin-bottom: 10px; display: block; }
+        .step-num { color: var(--chem-cyan); font-family: 'Fira Code'; font-weight: 700; margin-bottom: 8px; display: block; }
 
-        /* GAMEPLAY UI */
         .stats-header {
             position: sticky; top: 0; width: 100%; z-index: 50;
             display: flex; justify-content: space-between; padding: 20px;
@@ -87,34 +96,34 @@
         }
 
         .question-box {
-            width: 100%; font-size: 1.6rem; font-weight: 700; line-height: 1.4;
+            width: 100%; font-size: 1.5rem; font-weight: 700; line-height: 1.4;
             padding: 30px; border-radius: 20px; background: rgba(255,255,255,0.02);
             border-left: 10px solid var(--chem-purple); margin-bottom: 30px;
         }
 
-        .options-stack { width: 100%; display: flex; flex-direction: column; gap: 15px; }
+        .options-stack { width: 100%; display: flex; flex-direction: column; gap: 12px; }
         
         .option-item {
-            background: rgba(255,255,255,0.03); padding: 25px; border-radius: 20px;
-            border: 2px solid #1e293b; transition: 0.3s; cursor: none;
-            position: relative; overflow: hidden; font-size: 1.2rem;
+            background: rgba(255,255,255,0.03); padding: 22px; border-radius: 18px;
+            border: 2px solid #1e293b; transition: 0.2s; 
+            position: relative; overflow: hidden; font-size: 1.15rem;
         }
-        .option-item.hovered { border-color: var(--chem-amber); background: rgba(251, 191, 36, 0.1); transform: scale(1.02); }
+        .option-item.hovered { border-color: var(--chem-amber); background: rgba(251, 191, 36, 0.1); transform: translateX(8px); }
         .option-item.correct { background: var(--chem-green) !important; color: #000; border-color: var(--chem-green); font-weight: 700; }
-        .option-item.wrong { background: #ef4444 !important; color: #fff; border-color: #ef4444; }
+        .option-item.wrong { background: var(--danger) !important; color: #fff; border-color: var(--danger); }
 
         .loading-bar {
-            position: absolute; left: 0; bottom: 0; height: 6px;
+            position: absolute; left: 0; bottom: 0; height: 5px;
             background: var(--chem-amber); width: 0%; transition: width 0.05s linear;
         }
 
         .btn-start {
             background: var(--chem-cyan); color: #000; border: none;
-            padding: 18px 60px; font-size: 1.2rem; font-weight: 700;
-            border-radius: 50px; cursor: pointer; transition: 0.4s;
-            font-family: 'Space Grotesk'; letter-spacing: 1px;
+            padding: 16px 50px; font-size: 1.1rem; font-weight: 700;
+            border-radius: 50px; cursor: pointer; transition: 0.3s;
+            font-family: 'Space Grotesk'; text-transform: uppercase;
         }
-        .btn-start:hover { box-shadow: 0 0 30px var(--chem-cyan); transform: scale(1.05); }
+        .btn-start:hover { box-shadow: 0 0 25px var(--chem-cyan); transform: scale(1.05); }
 
         #preloader {
             position: fixed; inset: 0; background: var(--bg-deep); z-index: 999;
@@ -127,118 +136,99 @@
     <div class="lab-bg"></div>
 
     <div id="preloader">
-        <div style="font-family: 'Fira Code'; color: var(--chem-cyan); font-size: 1.5rem;">C8H10N4O2 (Caffeine) Required...</div>
-        <p style="margin-top: 10px; color: #475569;">Đang chuẩn bị dụng cụ thí nghiệm...</p>
+        <div style="font-family: 'Fira Code'; color: var(--chem-cyan); font-size: 1.2rem;">CALIBRATING SENSORS...</div>
+        <div style="margin-top: 15px; width: 200px; height: 2px; background: #1e293b; position: relative; overflow: hidden;">
+            <div style="position: absolute; width: 50%; height: 100%; background: var(--chem-cyan); animation: load 1.5s infinite;"></div>
+        </div>
     </div>
+    <style>@keyframes load { from { left: -100%; } to { left: 100%; } }</style>
 
     <div class="radar-panel" id="radar-ui">
-        <div class="radar-label">HEAD-TRACKING SENSOR</div>
-        <video id="input_video"></video>
-        <div id="status-indicator" style="font-size: 9px; padding: 3px; text-align: center; color: var(--chem-amber);">IDLE</div>
+        <div class="radar-label">ANTI-DRIFT SENSOR</div>
+        <div class="cam-wrapper">
+            <div id="target-dot"></div>
+            <video id="input_video"></video>
+        </div>
+        <div id="status-indicator" style="font-size: 10px; padding: 4px; text-align: center; color: var(--chem-amber); font-family: 'Fira Code';">READY</div>
     </div>
 
     <div id="start-screen" class="screen active">
-        <p style="text-transform: uppercase; letter-spacing: 5px; color: var(--chem-purple); margin-bottom: 10px; font-weight: 700;">Chemistry Project</p>
+        <p style="text-transform: uppercase; letter-spacing: 4px; color: var(--chem-purple); margin-bottom: 8px; font-weight: 700; font-size: 0.9rem;">Chemistry Terminal v2.0</p>
         <h1>LAB MASTER: KIM LOẠI</h1>
-        <p style="font-size: 1.2rem; color: #94a3b8; margin-top: 10px;">Sinh viên thực hiện: <b>Trần Minh Triển (12A1)</b></p>
+        <p style="color: #94a3b8; margin-top: 10px;">Thí nghiệm viên: <b>Trần Minh Triển (12A1)</b></p>
 
         <div class="tutorial-grid">
             <div class="step-card">
-                <span class="step-num">STEP 01</span>
-                <p>Nghiêng đầu sang <b>Trái / Phải</b> để chọn đáp án <b>A / B</b>.</p>
+                <span class="step-num">01. CƠ CHẾ CHỌN</span>
+                <p style="font-size: 0.95rem;">Nghiêng đầu dứt khoát về các hướng để kích hoạt Menu. Vòng tròn đỏ trên Radar giúp bạn căn chỉnh.</p>
             </div>
             <div class="step-card">
-                <span class="step-num">STEP 02</span>
-                <p>Ngẩng đầu <b>Lên / Xuống</b> để chọn đáp án <b>C / D</b>.</p>
+                <span class="step-num">02. CHỐNG NHIỄU</span>
+                <p style="font-size: 0.95rem;">Hệ thống đã được nâng cấp <b>Deadzone</b>. Nếu ngồi im ở giữa, hệ thống sẽ KHÔNG tự ý chọn.</p>
             </div>
             <div class="step-card">
-                <span class="step-num">STEP 03</span>
-                <p>Giữ yên vị trí <b>0.9 giây</b> để chốt đáp án. Hệ thống sẽ có âm thanh tick.</p>
-            </div>
-            <div class="step-card" style="border-color: var(--chem-purple);">
-                <span class="step-num" style="color: var(--chem-purple);">RANDOM</span>
-                <p>Hệ thống tự động xáo trộn 20 câu hỏi mỗi lượt chơi mới.</p>
+                <span class="step-num">03. XÁC NHẬN</span>
+                <p style="font-size: 0.95rem;">Giữ yên đầu 1 giây tại đáp án. Thanh màu vàng chạy hết là xác nhận hoàn tất.</p>
             </div>
         </div>
 
-        <button class="btn-start" onclick="startApp()">BẮT ĐẦU THÍ NGHIỆM</button>
+        <button class="btn-start" onclick="startApp()">KHỞI CHẠY THÍ NGHIỆM</button>
     </div>
 
     <div id="game-screen" class="screen">
         <div class="stats-header">
-            <div id="q-count" style="color: var(--chem-cyan);">PROGRESS: 01/20</div>
-            <div id="score" style="color: var(--chem-amber);">SCORE: 000</div>
+            <div id="q-count" style="color: var(--chem-cyan);">UNIT: 01/20</div>
+            <div id="score" style="color: var(--chem-amber);">DATA: 000</div>
         </div>
-
-        <div id="question" class="question-box">Dữ liệu câu hỏi đang được tải...</div>
-
+        <div id="question" class="question-box">Loading...</div>
         <div class="options-stack">
-            <div class="option-item" id="opt-A">
-                <span style="font-family: 'Fira Code'; font-weight: 700; color: var(--chem-cyan); margin-right: 15px;">[A]</span>
-                <span id="txt-A"></span>
-                <div class="loading-bar" id="pb-A"></div>
-            </div>
-            <div class="option-item" id="opt-B">
-                <span style="font-family: 'Fira Code'; font-weight: 700; color: var(--chem-cyan); margin-right: 15px;">[B]</span>
-                <span id="txt-B"></span>
-                <div class="loading-bar" id="pb-B"></div>
-            </div>
-            <div class="option-item" id="opt-C">
-                <span style="font-family: 'Fira Code'; font-weight: 700; color: var(--chem-cyan); margin-right: 15px;">[C]</span>
-                <span id="txt-C"></span>
-                <div class="loading-bar" id="pb-C"></div>
-            </div>
-            <div class="option-item" id="opt-D">
-                <span style="font-family: 'Fira Code'; font-weight: 700; color: var(--chem-cyan); margin-right: 15px;">[D]</span>
-                <span id="txt-D"></span>
-                <div class="loading-bar" id="pb-D"></div>
-            </div>
+            <div class="option-item" id="opt-A"><span style="color: var(--chem-cyan); font-weight: 700; margin-right: 12px;">A.</span> <span id="txt-A"></span><div class="loading-bar" id="pb-A"></div></div>
+            <div class="option-item" id="opt-B"><span style="color: var(--chem-cyan); font-weight: 700; margin-right: 12px;">B.</span> <span id="txt-B"></span><div class="loading-bar" id="pb-B"></div></div>
+            <div class="option-item" id="opt-C"><span style="color: var(--chem-cyan); font-weight: 700; margin-right: 12px;">C.</span> <span id="txt-C"></span><div class="loading-bar" id="pb-C"></div></div>
+            <div class="option-item" id="opt-D"><span style="color: var(--chem-cyan); font-weight: 700; margin-right: 12px;">D.</span> <span id="txt-D"></span><div class="loading-bar" id="pb-D"></div></div>
         </div>
-        
-        <p style="margin-top: 30px; color: #475569; font-size: 0.9rem;">(Bạn có thể cuộn chuột xuống nếu đề bài quá dài)</p>
     </div>
 
     <div id="result-screen" class="screen">
-        <h1>BÁO CÁO THÍ NGHIỆM</h1>
-        <div style="margin: 40px 0; text-align: center;">
-            <p style="color: #94a3b8;">Tổng điểm đạt được:</p>
-            <div style="font-size: 5rem; font-weight: 700; color: var(--chem-amber);" id="final-score">0</div>
-            <p id="rank-text" style="font-family: 'Fira Code'; color: var(--chem-green); font-size: 1.5rem;"></p>
+        <h1>PHÂN TÍCH HOÀN TẤT</h1>
+        <div style="margin: 30px 0; text-align: center;">
+            <div style="font-size: 4.5rem; font-weight: 700; color: var(--chem-amber);" id="final-score">0</div>
+            <p id="rank-text" style="font-family: 'Fira Code'; color: var(--chem-green); font-size: 1.4rem;"></p>
         </div>
-        <div style="background: rgba(255,255,255,0.05); padding: 25px; border-radius: 20px; width: 100%; text-align: center;">
-            <p>Học sinh: <b>Trần Minh Triển</b></p>
-            <p>Đơn vị: <b>Lớp 12A1</b></p>
-        </div>
-        <button class="btn-start" style="margin-top: 30px;" onclick="location.reload()">LÀM LẠI THÍ NGHIỆM</button>
+        <button class="btn-start" onclick="location.reload()">RE-START SESSION</button>
     </div>
 
     <script>
         const rawQuestions = [
-            { q: "Kim loại dẫn điện tốt nhất trong các kim loại?", a: "Bạc", b: "Đồng", c: "Vàng", d: "Sắt", ans: "A" },
-            { q: "Nhiệt độ nóng chảy cao nhất thuộc về?", a: "Crom", b: "Vonfram", c: "Thủy ngân", d: "Kẽm", ans: "B" },
-            { q: "Kim loại nào sau đây là kim loại kiềm thổ?", a: "Natri", b: "Canxi", c: "Nhôm", d: "Kali", ans: "B" },
-            { q: "Kim loại nào có thể tan được trong dung dịch NaOH?", a: "Sắt", b: "Magiê", c: "Nhôm", d: "Đồng", ans: "C" },
-            { q: "Quặng Boxit (Al2O3.2H2O) dùng để sản xuất kim loại nào?", a: "Sắt", b: "Đồng", c: "Nhôm", d: "Chì", ans: "C" },
-            { q: "Tính chất hóa học chung của kim loại là?", a: "Tính khử", b: "Tính oxi hóa", c: "Tính axit", d: "Tính bazơ", ans: "A" },
-            { q: "Kim loại lỏng duy nhất ở điều kiện thường?", a: "Natri", b: "Thủy ngân", c: "Chì", d: "Franxi", ans: "B" },
-            { q: "Ăn mòn điện hóa cần tối thiểu bao nhiêu điện cực?", a: "1", b: "2", c: "3", d: "4", ans: "B" },
-            { q: "Kim loại cứng nhất có thể cắt được thủy tinh?", a: "Sắt", b: "Đồng", c: "Crom", d: "Bạc", ans: "C" },
-            { q: "Kim loại nhẹ nhất (khối lượng riêng nhỏ nhất)?", a: "Liti", b: "Natri", c: "Kali", d: "Nhôm", ans: "A" },
-            { q: "Để bảo vệ vỏ tàu biển bằng thép, người ta gắn tấm?", a: "Đồng", b: "Kẽm", c: "Bạc", d: "Vàng", ans: "B" },
-            { q: "Dãy kim loại tác dụng với nước ở nhiệt độ thường?", a: "K, Na, Ca, Ba", b: "Cu, Ag, Au", c: "Fe, Zn, Al", d: "Mg, Al, Ca", ans: "A" },
-            { q: "Thành phần chính của Thép là Sắt và?", a: "Đồng", b: "Cacbon", c: "Nhôm", d: "Lưu huỳnh", ans: "B" },
-            { q: "Kim loại dẻo nhất có thể dát mỏng đến mức ánh sáng đi xuyên?", a: "Bạc", b: "Vàng", c: "Nhôm", d: "Đồng", ans: "B" },
-            { q: "Cấu hình electron lớp ngoài cùng của kim loại kiềm?", a: "ns1", b: "ns2", c: "ns2np1", d: "ns2np2", ans: "A" },
-            { q: "Sắt bị thụ động hóa trong axit nào sau đây?", a: "HCl loãng", b: "H2SO4 đặc, nguội", c: "H2SO4 loãng", d: "HNO3 loãng", ans: "B" },
-            { q: "Phương pháp điện phân nóng chảy dùng điều chế kim loại nào?", a: "Fe", b: "Cu", c: "Al", d: "Ag", ans: "C" },
-            { q: "Kim loại phản ứng với dung dịch HCl giải phóng H2?", a: "Cu", b: "Ag", c: "Mg", d: "Au", ans: "C" },
-            { q: "Gang là hợp kim của Sắt với Cacbon chiếm từ?", a: "0.01% - 2%", b: "2% - 5%", c: "5% - 10%", d: "> 10%", ans: "B" },
-            { q: "Kim loại nào sau đây có tính dẫn nhiệt tốt nhất?", a: "Bạc", b: "Nhôm", c: "Sắt", d: "Kẽm", ans: "A" }
+            { q: "Kim loại nào sau đây dẫn điện tốt nhất?", a: "Bạc", b: "Đồng", c: "Vàng", d: "Sắt", ans: "A" },
+            { q: "Kim loại có nhiệt độ nóng chảy cao nhất dùng làm dây tóc bóng đèn?", a: "Sắt", b: "Vonfram", c: "Đồng", d: "Crom", ans: "B" },
+            { q: "Trong các kim loại sau, kim loại nào là kim loại kiềm?", a: "Canxi", b: "Magiê", c: "Natri", d: "Nhôm", ans: "C" },
+            { q: "Kim loại nào sau đây có thể tan trong dung dịch NaOH?", a: "Sắt", b: "Nhôm", c: "Đồng", d: "Bạc", ans: "B" },
+            { q: "Kim loại cứng nhất có thể cắt được thủy tinh là?", a: "Sắt", b: "Đồng", c: "Crom", d: "Vàng", ans: "C" },
+            { q: "Kim loại dẻo nhất có thể dát mỏng làm đồ trang sức?", a: "Bạc", b: "Đồng", c: "Vàng", d: "Nhôm", ans: "C" },
+            { q: "Để bảo vệ vỏ tàu biển, người ta gắn tấm kim loại nào?", a: "Kẽm", b: "Đồng", c: "Chì", d: "Niken", ans: "A" },
+            { q: "Ở nhiệt độ thường, kim loại nào tồn tại ở trạng thái lỏng?", a: "Thủy ngân", b: "Chì", c: "Thiếc", d: "Natri", ans: "A" },
+            { q: "Kim loại nhẹ nhất trong bảng tuần hoàn là?", a: "Liti", b: "Natri", c: "Nhôm", d: "Kali", ans: "A" },
+            { q: "Hợp kim của Đồng và Kẽm có tên là gì?", a: "Gang", b: "Thép", c: "Đồng thau", d: "Đura", ans: "C" },
+            { q: "Quặng Boxit là nguyên liệu để sản xuất kim loại nào?", a: "Sắt", b: "Nhôm", c: "Magie", d: "Đồng", ans: "B" },
+            { q: "Tính chất hóa học chung của kim loại là?", a: "Tính khử", b: "Tính oxi hóa", c: "Tính Axit", d: "Tính Bazơ", ans: "A" },
+            { q: "Dãy gồm các kim loại tác dụng được với nước ở nhiệt độ thường?", a: "K, Na, Ca, Ba", b: "Cu, Ag, Au", c: "Fe, Zn, Al", d: "Mg, Al, Ca", ans: "A" },
+            { q: "Cấu hình electron lớp ngoài cùng của kim loại kiềm thổ?", a: "ns1", b: "ns2", c: "ns2np1", d: "ns2np2", ans: "B" },
+            { q: "Kim loại nào bị thụ động hóa trong HNO3 đặc, nguội?", a: "Cu", b: "Ag", c: "Fe", d: "Mg", ans: "C" },
+            { q: "Gang là hợp kim của Sắt với nguyên tố nào (chiếm 2-5%)?", a: "Đồng", b: "Cacbon", c: "Nhôm", d: "Niken", ans: "B" },
+            { q: "Kim loại phản ứng với dung dịch HCl tạo khí H2?", a: "Ag", b: "Cu", c: "Mg", d: "Au", ans: "C" },
+            { q: "Phương pháp thủy luyện thường dùng điều chế kim loại có tính khử?", a: "Mạnh", b: "Trung bình và yếu", c: "Rất mạnh", d: "Mọi kim loại", ans: "B" },
+            { q: "Sắt bị gỉ trong không khí ẩm là loại ăn mòn nào?", a: "Hóa học", b: "Điện hóa", c: "Vật lý", d: "Sinh học", ans: "B" },
+            { q: "Ăn mòn điện hóa phát sinh yếu tố nào sau đây?", a: "Nhiệt lượng", b: "Dòng điện", c: "Từ trường", d: "Ánh sáng", ans: "B" }
         ];
 
         let questions = [];
         let currentIdx = 0, score = 0, isLocked = false, selectedKey = null, holdValue = 0;
-        const HOLD_REQ = 18;
+        
+        // --- CÀI ĐẶT CHỐNG NHIỄU CAO ---
+        const HOLD_REQ = 20; // Tăng lên 1 giây để chắc chắn
+        const DEADZONE_H = 0.18; // Tăng vùng an toàn ngang (Trái-Phải)
+        const DEADZONE_V = 0.12; // Tăng vùng an toàn dọc (Lên-Xuống)
 
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -259,7 +249,7 @@
         }
 
         const faceMesh = new FaceMesh({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}` });
-        faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: true, minDetectionConfidence: 0.7 });
+        faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: true, minDetectionConfidence: 0.8 });
         faceMesh.onResults(onResults);
 
         const camera = new Camera(document.getElementById('input_video'), { 
@@ -267,13 +257,14 @@
             width: 400, height: 300 
         });
 
-        window.onload = () => { setTimeout(() => document.getElementById('preloader').style.display='none', 1800); };
+        window.onload = () => { setTimeout(() => document.getElementById('preloader').style.display='none', 1500); };
 
         function startApp() {
             if (audioCtx.state === 'suspended') audioCtx.resume();
             questions = shuffle([...rawQuestions]);
             document.getElementById('start-screen').classList.remove('active');
             document.getElementById('game-screen').classList.add('active');
+            document.getElementById('target-dot').style.display = 'block';
             camera.start();
             showQuestion();
         }
@@ -281,7 +272,7 @@
         function showQuestion() {
             if (currentIdx >= questions.length) { endGame(); return; }
             isLocked = false; selectedKey = null; holdValue = 0;
-            document.getElementById('status-indicator').innerText = "TRACKING...";
+            document.getElementById('status-indicator').innerText = "CALIBRATED";
             document.getElementById('status-indicator').style.color = "var(--chem-cyan)";
             
             document.querySelectorAll('.option-item').forEach(el => {
@@ -295,26 +286,36 @@
             document.getElementById('txt-B').innerText = q.b;
             document.getElementById('txt-C').innerText = q.c;
             document.getElementById('txt-D').innerText = q.d;
-            document.getElementById('q-count').innerText = `PROGRESS: ${String(currentIdx+1).padStart(2,'0')}/20`;
+            document.getElementById('q-count').innerText = `UNIT: ${String(currentIdx+1).padStart(2,'0')}/20`;
             window.scrollTo(0, 0);
         }
 
         function onResults(results) {
             const radar = document.getElementById('radar-ui');
+            const dot = document.getElementById('target-dot');
+
             if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
                 radar.style.borderColor = "var(--chem-green)";
-                if (isLocked) return;
-
+                
                 const lm = results.multiFaceLandmarks[0];
                 const nose = lm[1], left = lm[33], right = lm[263], top = lm[10], bot = lm[152];
+                
+                // Tỷ lệ vị trí mũi trong khung mặt (0.0 - 1.0)
                 const h = (nose.x - left.x) / (right.x - left.x);
                 const v = (nose.y - top.y) / (bot.y - top.y);
 
+                // Cập nhật hồng tâm trên Radar (đảo ngược X vì video scaleX(-1))
+                dot.style.left = (1 - h) * 100 + '%';
+                dot.style.top = v * 100 + '%';
+
+                if (isLocked) return;
+
                 let key = null;
-                if (h < 0.38) key = 'A';
-                else if (h > 0.62) key = 'B';
-                else if (v < 0.45) key = 'C';
-                else if (v > 0.55) key = 'D';
+                // Áp dụng bộ lọc vùng chết mới
+                if (h < 0.5 - DEADZONE_H) key = 'A';
+                else if (h > 0.5 + DEADZONE_H) key = 'B';
+                else if (v < 0.5 - DEADZONE_V) key = 'C';
+                else if (v > 0.5 + DEADZONE_V) key = 'D';
 
                 if (key && key === selectedKey) {
                     holdValue++;
@@ -329,35 +330,42 @@
                     });
                     if (key) {
                         document.getElementById(`opt-${key}`).classList.add('hovered');
-                        document.getElementById('status-indicator').innerText = `TARGET: ${key}`;
+                        document.getElementById('status-indicator').innerText = `LOCKING: ${key}`;
+                        document.getElementById('status-indicator').style.color = "var(--chem-amber)";
                     } else {
-                        document.getElementById('status-indicator').innerText = "CENTERED";
+                        document.getElementById('status-indicator').innerText = "STABLE";
+                        document.getElementById('status-indicator').style.color = "var(--chem-cyan)";
                     }
                 }
-            } else { radar.style.borderColor = "var(--chem-cyan)"; }
+            } else { 
+                radar.style.borderColor = "var(--chem-cyan)";
+                document.getElementById('status-indicator').innerText = "LOST SIGNAL";
+                document.getElementById('status-indicator').style.color = var(--danger);
+            }
         }
 
         function confirmAnswer(key) {
             isLocked = true;
             const ans = questions[currentIdx].ans;
             if (key === ans) {
-                document.getElementById(`opt-${key}`).classList.add('correct');
+                document.getElementById(`opt-${key}`).className = 'option-item correct';
                 score += 10;
                 playSfx(523, 'sine', 0.2); setTimeout(()=>playSfx(659, 'sine', 0.3), 100);
             } else {
-                document.getElementById(`opt-${key}`).classList.add('wrong');
-                document.getElementById(`opt-${ans}`).classList.add('correct');
+                document.getElementById(`opt-${key}`).className = 'option-item wrong';
+                document.getElementById(`opt-${ans}`).className = 'option-item correct';
                 playSfx(150, 'sawtooth', 0.4, 0.1);
             }
-            document.getElementById('score').innerText = `SCORE: ${score.toString().padStart(3, '0')}`;
-            setTimeout(() => { currentIdx++; showQuestion(); }, 1500);
+            document.getElementById('score').innerText = `DATA: ${score.toString().padStart(3, '0')}`;
+            setTimeout(() => { currentIdx++; showQuestion(); }, 1600);
         }
 
         function endGame() {
             document.getElementById('game-screen').classList.remove('active');
             document.getElementById('result-screen').classList.add('active');
             document.getElementById('final-score').innerText = score;
-            document.getElementById('rank-text').innerText = score >= 160 ? "EXPERIMENT SUCCESS (RANK S)" : "MISSION COMPLETE";
+            document.getElementById('rank-text').innerText = score >= 160 ? "LEVEL: EXPERT" : "LEVEL: COMPETENT";
+            document.getElementById('target-dot').style.display = 'none';
             camera.stop();
         }
     </script>
