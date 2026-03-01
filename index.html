@@ -2,98 +2,90 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Game Hóa học 12</title>
+<title>GAME HÓA HỌC – ĐẠI CƯƠNG VỀ KIM LOẠI</title>
 
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection"></script>
 
 <style>
 
 body{
-margin:0;
-font-family:Arial;
-background:linear-gradient(135deg,#0f172a,#020617);
+font-family: Arial;
+background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
 color:white;
 text-align:center;
-}
-
-header{
-padding:20px;
+margin:0;
+padding:0;
 }
 
 h1{
-margin:0;
-color:#22c55e;
+margin-top:20px;
+font-size:40px;
 }
 
-.quiz{
-max-width:800px;
-margin:auto;
-padding:20px;
+button{
+padding:15px 40px;
+font-size:20px;
+border:none;
+border-radius:10px;
+background:#00c6ff;
+color:white;
+cursor:pointer;
+margin:10px;
 }
 
-.question{
-font-size:22px;
-margin:20px 0;
+#game{
+display:none;
+}
+
+video{
+border:4px solid white;
+border-radius:10px;
+margin-top:10px;
+}
+
+#question{
+font-size:24px;
+margin-top:20px;
 }
 
 .answers{
 display:grid;
 grid-template-columns:1fr 1fr;
-gap:15px;
+gap:20px;
+width:60%;
+margin:auto;
+margin-top:20px;
 }
 
 .answer{
 padding:20px;
-border-radius:12px;
-font-size:18px;
-cursor:pointer;
-transition:0.2s;
+border-radius:10px;
+background:#34495e;
+font-size:20px;
+transition:0.3s;
 }
 
-.answer:hover{
-transform:scale(1.05);
+.highlight{
+background:#f1c40f;
 }
-
-.A{background:#ef4444;}
-.B{background:#3b82f6;}
-.C{background:#eab308;}
-.D{background:#a855f7;}
 
 .correct{
-background:#16a34a !important;
+background:#2ecc71;
 }
 
 .wrong{
-background:#dc2626 !important;
+background:#e74c3c;
 }
 
-#camera{
-position:fixed;
-top:10px;
-right:10px;
-width:220px;
-border-radius:10px;
-border:2px solid white;
+#progress{
+margin-top:15px;
+font-size:20px;
 }
 
-.status{
-margin-top:10px;
-color:#38bdf8;
-}
-
-.start{
-margin-top:30px;
-padding:15px 25px;
-font-size:18px;
-border:none;
-border-radius:10px;
-background:#22c55e;
-cursor:pointer;
-}
-
-.result{
-font-size:28px;
+#result{
+display:none;
+font-size:30px;
 margin-top:30px;
 }
 
@@ -102,188 +94,360 @@ margin-top:30px;
 
 <body>
 
-<header>
-<h1>Game Hóa học 12 – Đại cương kim loại</h1>
-<div>Học sinh: Trần Minh Triển | Lớp 12A1</div>
-</header>
+<h1>GAME HÓA HỌC – ĐẠI CƯƠNG VỀ KIM LOẠI</h1>
 
-<div class="quiz">
-
-<div id="start">
-<button class="start" onclick="startGame()">Bắt đầu</button>
+<div id="menu">
+<button onclick="startGame()">Bắt đầu</button>
+<button onclick="alert('Nghiêng trái = A\nNghiêng phải = B\nNgẩng đầu = C\nCúi đầu = D')">Hướng dẫn</button>
 </div>
 
-<div id="game" style="display:none">
+<div id="game">
+
+<video id="video" width="320" height="240" autoplay muted></video>
 
 <div id="progress"></div>
 
-<div class="question" id="question"></div>
+<div id="question"></div>
 
 <div class="answers">
-
-<div class="answer A" id="A"></div>
-<div class="answer B" id="B"></div>
-<div class="answer C" id="C"></div>
-<div class="answer D" id="D"></div>
+<div id="A" class="answer">A</div>
+<div id="B" class="answer">B</div>
+<div id="C" class="answer">C</div>
+<div id="D" class="answer">D</div>
+</div>
 
 </div>
 
-<div class="status" id="status">Đang nhận diện khuôn mặt...</div>
-
-</div>
-
-<div id="result" style="display:none" class="result"></div>
-
-</div>
-
-<video id="camera" autoplay muted></video>
+<div id="result"></div>
 
 <script>
 
-const questions=[
-{q:"Kim loại nào phản ứng mạnh với nước ở nhiệt độ thường?",A:"Fe",B:"Na",C:"Cu",D:"Ag",c:"B"},
-{q:"Liên kết kim loại là gì?",A:"Lực hút ion kim loại và electron tự do",B:"Liên kết cộng hóa trị",C:"Liên kết ion",D:"Liên kết hidro",c:"A"},
-{q:"Kim loại thường đóng vai trò gì trong phản ứng?",A:"Chất khử",B:"Chất oxi hóa",C:"Dung môi",D:"Chất xúc tác",c:"A"},
-{q:"Kim loại dẫn điện tốt nhất?",A:"Cu",B:"Ag",C:"Fe",D:"Al",c:"B"}
-];
+let video = document.getElementById("video")
+let model
+let score = 0
+let current = 0
+let holdTime = 0
+let selected = null
 
-let index=0;
-let score=0;
-let selected=null;
+const questions = [
+
+{
+q:"Kim loại có tính chất vật lí chung nào?",
+A:"Dẫn điện tốt",
+B:"Không dẫn nhiệt",
+C:"Không dẫn điện",
+D:"Tan trong nước",
+correct:"A"
+},
+
+{
+q:"Tính chất hóa học đặc trưng của kim loại là:",
+A:"Tính oxi hóa",
+B:"Tính khử",
+C:"Tính axit",
+D:"Tính bazơ",
+correct:"B"
+},
+
+{
+q:"Kim loại nào phản ứng mạnh với nước?",
+A:"Na",
+B:"Fe",
+C:"Cu",
+D:"Ag",
+correct:"A"
+},
+
+{
+q:"Kim loại dẫn điện tốt nhất là:",
+A:"Cu",
+B:"Ag",
+C:"Fe",
+D:"Al",
+correct:"B"
+},
+
+{
+q:"Kim loại nào nhẹ nhất?",
+A:"Na",
+B:"Li",
+C:"K",
+D:"Al",
+correct:"B"
+},
+
+{
+q:"Kim loại nào không phản ứng với HCl?",
+A:"Cu",
+B:"Zn",
+C:"Fe",
+D:"Al",
+correct:"A"
+},
+
+{
+q:"Kim loại nào đứng đầu dãy điện hóa?",
+A:"Li",
+B:"Na",
+C:"K",
+D:"Cs",
+correct:"D"
+},
+
+{
+q:"Kim loại nào thường dùng làm dây điện?",
+A:"Fe",
+B:"Cu",
+C:"Al",
+D:"Zn",
+correct:"B"
+},
+
+{
+q:"Hợp kim là:",
+A:"Kim loại tinh khiết",
+B:"Hỗn hợp kim loại",
+C:"Phi kim",
+D:"Dung dịch",
+correct:"B"
+},
+
+{
+q:"Thép là hợp kim của:",
+A:"Fe và C",
+B:"Cu và Zn",
+C:"Al và Cu",
+D:"Fe và Al",
+correct:"A"
+},
+
+{
+q:"Đồng thau là hợp kim:",
+A:"Cu Zn",
+B:"Cu Sn",
+C:"Fe C",
+D:"Al Cu",
+correct:"A"
+},
+
+{
+q:"Ăn mòn kim loại là:",
+A:"Phản ứng hóa học phá hủy kim loại",
+B:"Phản ứng vật lí",
+C:"Hòa tan",
+D:"Nung nóng",
+correct:"A"
+},
+
+{
+q:"Ăn mòn điện hóa xảy ra khi:",
+A:"Kim loại trong dung dịch điện li",
+B:"Trong nước cất",
+C:"Trong khí",
+D:"Trong chân không",
+correct:"A"
+},
+
+{
+q:"Phương pháp điều chế kim loại mạnh:",
+A:"Điện phân",
+B:"Nhiệt luyện",
+C:"Thủy luyện",
+D:"Kết tinh",
+correct:"A"
+},
+
+{
+q:"Kim loại tồn tại dạng tự do:",
+A:"Au",
+B:"Na",
+C:"K",
+D:"Ca",
+correct:"A"
+},
+
+{
+q:"Kim loại có nhiệt độ nóng chảy cao:",
+A:"W",
+B:"Hg",
+C:"Na",
+D:"K",
+correct:"A"
+},
+
+{
+q:"Kim loại lỏng ở nhiệt độ thường:",
+A:"Hg",
+B:"Fe",
+C:"Cu",
+D:"Al",
+correct:"A"
+},
+
+{
+q:"Kim loại nào bị ăn mòn nhanh nhất?",
+A:"Fe",
+B:"Ag",
+C:"Au",
+D:"Pt",
+correct:"A"
+},
+
+{
+q:"Kim loại nào dẫn nhiệt tốt?",
+A:"Ag",
+B:"Fe",
+C:"Pb",
+D:"Zn",
+correct:"A"
+},
+
+{
+q:"Kim loại nào mềm nhất?",
+A:"Na",
+B:"Fe",
+C:"Cu",
+D:"Al",
+correct:"A"
+}
+
+]
 
 function startGame(){
+document.getElementById("menu").style.display="none"
+document.getElementById("game").style.display="block"
+setupCamera()
+loadQuestion()
+}
 
-document.getElementById("start").style.display="none";
-document.getElementById("game").style.display="block";
+function loadQuestion(){
 
-showQuestion();
+let q = questions[current]
+
+document.getElementById("progress").innerText =
+"Câu "+(current+1)+" / "+questions.length
+
+document.getElementById("question").innerText = q.q
+
+document.getElementById("A").innerText = "A. "+q.A
+document.getElementById("B").innerText = "B. "+q.B
+document.getElementById("C").innerText = "C. "+q.C
+document.getElementById("D").innerText = "D. "+q.D
 
 }
 
-function showQuestion(){
+async function setupCamera(){
 
-let q=questions[index];
+let stream = await navigator.mediaDevices.getUserMedia({video:true})
 
-document.getElementById("progress").innerText=
-`Câu ${index+1}/${questions.length} | Điểm: ${score}`;
+video.srcObject = stream
 
-document.getElementById("question").innerText=q.q;
+model = await faceLandmarksDetection.load(
+faceLandmarksDetection.SupportedPackages.mediapipeFacemesh
+)
 
-["A","B","C","D"].forEach(k=>{
-document.getElementById(k).innerText=k+". "+q[k];
-document.getElementById(k).classList.remove("correct","wrong");
-});
+detectFace()
 
 }
 
-function answer(letter){
+async function detectFace(){
 
-let q=questions[index];
+const predictions = await model.estimateFaces({input:video})
 
-if(letter===q.c){
+if(predictions.length>0){
 
-document.getElementById(letter).classList.add("correct");
-score++;
+let nose = predictions[0].scaledMesh[1]
+let left = predictions[0].scaledMesh[234]
+let right = predictions[0].scaledMesh[454]
+
+let dx = right[0]-left[0]
+let dy = nose[1]-((left[1]+right[1])/2)
+
+if(dx>200) select("B")
+if(dx<180) select("A")
+if(dy<-20) select("C")
+if(dy>20) select("D")
+
+}
+
+requestAnimationFrame(detectFace)
+
+}
+
+function select(letter){
+
+if(selected!==letter){
+
+selected = letter
+holdTime = Date.now()
+
+document.querySelectorAll(".answer").forEach(e=>e.classList.remove("highlight"))
+
+document.getElementById(letter).classList.add("highlight")
+
+}
+
+if(Date.now()-holdTime>2000){
+
+checkAnswer(letter)
+
+}
+
+}
+
+function checkAnswer(letter){
+
+let q = questions[current]
+
+if(letter===q.correct){
+
+score+=10
+document.getElementById(letter).classList.add("correct")
 
 }else{
 
-document.getElementById(letter).classList.add("wrong");
+document.getElementById(letter).classList.add("wrong")
 
 }
 
 setTimeout(()=>{
 
-index++;
+current++
 
-if(index>=questions.length){
+if(current>=questions.length){
 
-endGame();
+endGame()
 
 }else{
 
-showQuestion();
+document.querySelectorAll(".answer").forEach(e=>{
+e.classList.remove("correct","wrong","highlight")
+})
+
+loadQuestion()
 
 }
 
-},2000)
+},1200)
 
 }
 
 function endGame(){
 
-document.getElementById("game").style.display="none";
-document.getElementById("result").style.display="block";
-document.getElementById("result").innerText=
-`Bạn trả lời đúng ${score}/${questions.length}`;
+document.getElementById("game").style.display="none"
+
+let rank="Cần ôn tập"
+
+if(score>=180) rank="Nhà hóa học"
+else if(score>=140) rank="Học sinh giỏi"
+else if(score>=100) rank="Khá"
+
+document.getElementById("result").style.display="block"
+
+document.getElementById("result").innerHTML=
+"Điểm của bạn: "+score+" / 200<br><br>"+rank
 
 }
-
-navigator.mediaDevices.getUserMedia({video:true})
-.then(stream=>{
-document.getElementById("camera").srcObject=stream;
-})
-
-const faceMesh=new FaceMesh({
-
-locateFile:(file)=>{
-return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
-}
-
-});
-
-faceMesh.setOptions({
-
-maxNumFaces:1,
-refineLandmarks:true,
-minDetectionConfidence:0.5,
-minTrackingConfidence:0.5
-
-});
-
-faceMesh.onResults(results=>{
-
-if(!results.multiFaceLandmarks)return;
-
-const lm=results.multiFaceLandmarks[0];
-
-const leftEye=lm[33];
-const rightEye=lm[263];
-const nose=lm[1];
-
-const center=(leftEye.x+rightEye.x)/2;
-
-const diff=nose.x-center;
-
-if(diff<-0.03){
-
-document.getElementById("status").innerText="Nghiêng trái";
-answer("A");
-
-}
-
-if(diff>0.03){
-
-document.getElementById("status").innerText="Nghiêng phải";
-answer("B");
-
-}
-
-});
-
-const video=document.getElementById("camera");
-
-const camera=new Camera(video,{
-
-onFrame:async()=>{
-await faceMesh.send({image:video});
-},
-
-width:320,
-height:240
-
-});
-
-camera.start();
 
 </script>
 
