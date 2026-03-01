@@ -2,7 +2,9 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>GAME HÓA HỌC – ĐẠI CƯƠNG VỀ KIM LOẠI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>GAME HÓA HỌC – KIM LOẠI</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection"></script>
@@ -11,68 +13,84 @@
 <style>
 
 body{
-font-family:Arial;
-background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-color:white;
-text-align:center;
 margin:0;
+font-family:Segoe UI;
+background:linear-gradient(135deg,#1f4037,#99f2c8);
+text-align:center;
+color:white;
 }
 
 h1{
-margin-top:20px;
-font-size:38px;
+margin-top:15px;
+font-size:30px;
+text-shadow:0 2px 5px rgba(0,0,0,0.3);
 }
 
 button{
-padding:15px 35px;
-font-size:20px;
+padding:14px 28px;
+font-size:18px;
 border:none;
-border-radius:10px;
-background:#00c6ff;
+border-radius:12px;
+background:#ff7675;
 color:white;
 cursor:pointer;
 margin:10px;
+box-shadow:0 4px 10px rgba(0,0,0,0.3);
+}
+
+button:hover{
+transform:scale(1.05);
 }
 
 #game{
 display:none;
 }
 
-video{
-border:4px solid white;
-border-radius:10px;
-margin-top:10px;
+.camera-box{
+position:relative;
+width:320px;
+margin:auto;
 }
 
-#progress{
-margin-top:15px;
-font-size:20px;
+video{
+width:100%;
+border-radius:15px;
+border:4px solid white;
+}
+
+canvas{
+position:absolute;
+left:0;
+top:0;
 }
 
 #question{
-font-size:24px;
+font-size:22px;
 margin-top:15px;
+padding:10px;
 }
 
 .answers{
 display:grid;
 grid-template-columns:1fr 1fr;
-gap:20px;
-width:60%;
+gap:15px;
+width:90%;
+max-width:500px;
 margin:auto;
-margin-top:20px;
+margin-top:10px;
 }
 
 .answer{
-padding:20px;
-border-radius:10px;
-background:#34495e;
-font-size:20px;
+background:#2c3e50;
+padding:15px;
+border-radius:12px;
+font-size:18px;
 transition:0.3s;
 }
 
 .highlight{
 background:#f1c40f;
+transform:scale(1.05);
 }
 
 .correct{
@@ -83,10 +101,22 @@ background:#2ecc71;
 background:#e74c3c;
 }
 
+#progress{
+margin-top:10px;
+font-size:18px;
+}
+
 #result{
 display:none;
-font-size:28px;
+font-size:26px;
 margin-top:30px;
+}
+
+@media (max-width:600px){
+
+h1{font-size:22px}
+.answer{font-size:16px}
+
 }
 
 </style>
@@ -94,19 +124,23 @@ margin-top:30px;
 
 <body>
 
-<h1>GAME HÓA HỌC – ĐẠI CƯƠNG VỀ KIM LOẠI</h1>
+<h1>🎮 GAME HÓA HỌC – ĐẠI CƯƠNG KIM LOẠI</h1>
 
 <div id="menu">
 <button onclick="startGame()">Bắt đầu</button>
-<button onclick="alert('Điều khiển bằng đầu:\nNghiêng trái = A\nNghiêng phải = B\nNgẩng đầu = C\nCúi đầu = D\nGiữ 2 giây để chọn')">Hướng dẫn</button>
+<button onclick="alert('Nghiêng trái = A\nNghiêng phải = B\nNgẩng đầu = C\nCúi đầu = D\nGiữ 2 giây để chọn')">
+Hướng dẫn
+</button>
 </div>
 
 <div id="game">
 
-<video id="video" width="320" height="240" autoplay muted></video>
+<div class="camera-box">
+<video id="video" autoplay muted playsinline></video>
+<canvas id="canvas"></canvas>
+</div>
 
 <div id="progress"></div>
-
 <div id="question"></div>
 
 <div class="answers">
@@ -124,43 +158,35 @@ margin-top:30px;
 
 <script>
 
-const video = document.getElementById("video")
+const video=document.getElementById("video")
+const canvas=document.getElementById("canvas")
+const ctx=canvas.getContext("2d")
 
 let detector
-let score = 0
-let current = 0
-let selected = null
-let holdStart = null
+let score=0
+let current=0
+let selected=null
+let holdStart=null
 
 const questions=[
 
 {q:"Kim loại có tính chất vật lí chung nào?",A:"Dẫn điện tốt",B:"Không dẫn nhiệt",C:"Không dẫn điện",D:"Tan trong nước",correct:"A"},
 {q:"Tính chất hóa học đặc trưng của kim loại là:",A:"Tính oxi hóa",B:"Tính khử",C:"Tính axit",D:"Tính bazơ",correct:"B"},
-{q:"Kim loại nào phản ứng mạnh với nước?",A:"Na",B:"Fe",C:"Cu",D:"Ag",correct:"A"},
+{q:"Kim loại phản ứng mạnh với nước?",A:"Na",B:"Fe",C:"Cu",D:"Ag",correct:"A"},
 {q:"Kim loại dẫn điện tốt nhất?",A:"Cu",B:"Ag",C:"Fe",D:"Al",correct:"B"},
-{q:"Kim loại nhẹ nhất?",A:"Na",B:"Li",C:"K",D:"Al",correct:"B"},
-{q:"Kim loại nào không phản ứng với HCl?",A:"Cu",B:"Zn",C:"Fe",D:"Al",correct:"A"},
-{q:"Kim loại thường dùng làm dây điện?",A:"Fe",B:"Cu",C:"Al",D:"Zn",correct:"B"},
-{q:"Thép là hợp kim của:",A:"Fe và C",B:"Cu và Zn",C:"Al và Cu",D:"Fe và Al",correct:"A"},
-{q:"Đồng thau là hợp kim:",A:"Cu Zn",B:"Cu Sn",C:"Fe C",D:"Al Cu",correct:"A"},
-{q:"Ăn mòn kim loại là:",A:"Phá hủy kim loại",B:"Hòa tan",C:"Đóng băng",D:"Nung nóng",correct:"A"},
-{q:"Kim loại tồn tại tự do:",A:"Au",B:"Na",C:"K",D:"Ca",correct:"A"},
+{q:"Kim loại nhẹ nhất?",A:"Li",B:"Na",C:"Fe",D:"Cu",correct:"A"},
+{q:"Thép là hợp kim:",A:"Fe + C",B:"Cu + Zn",C:"Al + Cu",D:"Fe + Al",correct:"A"},
 {q:"Kim loại lỏng ở nhiệt độ thường:",A:"Hg",B:"Fe",C:"Cu",D:"Al",correct:"A"},
-{q:"Kim loại nóng chảy cao:",A:"W",B:"Na",C:"Hg",D:"K",correct:"A"},
-{q:"Kim loại bị ăn mòn nhiều:",A:"Fe",B:"Ag",C:"Au",D:"Pt",correct:"A"},
-{q:"Kim loại dẫn nhiệt tốt:",A:"Ag",B:"Fe",C:"Pb",D:"Zn",correct:"A"},
-{q:"Kim loại mềm:",A:"Na",B:"Fe",C:"Cu",D:"Al",correct:"A"},
-{q:"Phương pháp điều chế kim loại mạnh:",A:"Điện phân",B:"Nhiệt luyện",C:"Thủy luyện",D:"Kết tinh",correct:"A"},
-{q:"Kim loại kiềm phản ứng mạnh với:",A:"Nước",B:"Không khí",C:"CO2",D:"N2",correct:"A"},
-{q:"Kim loại dùng làm vỏ máy bay:",A:"Al",B:"Fe",C:"Cu",D:"Zn",correct:"A"},
-{q:"Kim loại quý:",A:"Au",B:"Fe",C:"Na",D:"Ca",correct:"A"}
+{q:"Kim loại tồn tại tự do:",A:"Au",B:"Na",C:"K",D:"Ca",correct:"A"},
+{q:"Kim loại dùng làm dây điện:",A:"Cu",B:"Fe",C:"Zn",D:"Pb",correct:"A"},
+{q:"Kim loại nóng chảy cao:",A:"W",B:"Na",C:"K",D:"Hg",correct:"A"}
 
 ]
 
 function startGame(){
 
-document.getElementById("menu").style.display="none"
-document.getElementById("game").style.display="block"
+menu.style.display="none"
+game.style.display="block"
 
 loadQuestion()
 initCamera()
@@ -171,8 +197,8 @@ function loadQuestion(){
 
 let q=questions[current]
 
-document.getElementById("progress").innerText="Câu "+(current+1)+" / "+questions.length
-document.getElementById("question").innerText=q.q
+progress.innerText="Câu "+(current+1)+" / "+questions.length
+question.innerText=q.q
 
 A.innerText="A. "+q.A
 B.innerText="B. "+q.B
@@ -183,8 +209,16 @@ D.innerText="D. "+q.D
 
 async function initCamera(){
 
-const stream=await navigator.mediaDevices.getUserMedia({video:true})
+const stream=await navigator.mediaDevices.getUserMedia({
+video:{facingMode:"user"}
+})
+
 video.srcObject=stream
+
+await video.play()
+
+canvas.width=video.videoWidth
+canvas.height=video.videoHeight
 
 detector=await faceLandmarksDetection.createDetector(
 faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh,
@@ -197,18 +231,32 @@ detect()
 
 async function detect(){
 
+ctx.clearRect(0,0,canvas.width,canvas.height)
+
 const faces=await detector.estimateFaces(video)
 
 if(faces.length>0){
 
-const pts=faces[0].keypoints
+const face=faces[0]
+
+const pts=face.keypoints
 
 const nose=pts[1]
 const left=pts[33]
 const right=pts[263]
 
-const eyeX=(left.x+right.x)/2
-const eyeY=(left.y+right.y)/2
+/* vẽ khung mặt */
+
+const box=face.box
+
+ctx.strokeStyle="#00ffcc"
+ctx.lineWidth=3
+ctx.strokeRect(box.xMin,box.yMin,box.width,box.height)
+
+/* tính góc đầu */
+
+let eyeX=(left.x+right.x)/2
+let eyeY=(left.y+right.y)/2
 
 let dx=nose.x-eyeX
 let dy=nose.y-eyeY
@@ -230,11 +278,13 @@ requestAnimationFrame(detect)
 
 function highlight(letter){
 
-if(!letter) return
+if(!letter)return
 
-document.querySelectorAll(".answer").forEach(a=>a.classList.remove("highlight"))
+document.querySelectorAll(".answer")
+.forEach(a=>a.classList.remove("highlight"))
 
-document.getElementById(letter).classList.add("highlight")
+document.getElementById(letter)
+.classList.add("highlight")
 
 if(selected!==letter){
 
@@ -273,9 +323,8 @@ setTimeout(()=>{
 
 current++
 
-document.querySelectorAll(".answer").forEach(a=>{
-a.classList.remove("highlight","correct","wrong")
-})
+document.querySelectorAll(".answer")
+.forEach(a=>a.classList.remove("highlight","correct","wrong"))
 
 if(current>=questions.length){
 
@@ -293,18 +342,18 @@ loadQuestion()
 
 function endGame(){
 
-document.getElementById("game").style.display="none"
+game.style.display="none"
 
 let rank="Cần ôn tập"
 
-if(score>=180) rank="Nhà hóa học"
-else if(score>=140) rank="Học sinh giỏi"
-else if(score>=100) rank="Khá"
+if(score>=90) rank="Nhà hóa học"
+else if(score>=70) rank="Học sinh giỏi"
+else if(score>=50) rank="Khá"
 
-document.getElementById("result").style.display="block"
+result.style.display="block"
 
-document.getElementById("result").innerHTML=
-"Điểm của bạn: "+score+" / 200<br><br>"+rank
+result.innerHTML=
+"🎉 Điểm của bạn: "+score+"<br><br>"+rank
 
 }
 
