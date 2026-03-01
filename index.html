@@ -9,259 +9,189 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Quicksand:wght@400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Be+Vietnam+Pro:wght@400;600;800&display=swap');
 
         :root {
-            --neon-blue: #00f2ff;
-            --neon-amber: #ffaa00;
-            --neon-green: #00ff88;
-            --neon-red: #ff3366;
-            --glass: rgba(15, 23, 42, 0.8);
-            --glass-border: rgba(255, 255, 255, 0.1);
+            --neon-blue: #00f2ff; --neon-amber: #ffaa00; --neon-green: #00ff88; --neon-red: #ff3366;
+            --bg-dark: #020617; --glass: rgba(15, 23, 42, 0.9);
         }
 
-        * { box-sizing: border-box; }
+        /* CHO PHÉP TRƯỢT TRANG */
+        html, body { 
+            height: auto; min-height: 100%; 
+            overflow-y: auto; overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
         body {
-            margin: 0; padding: 0;
-            background: #020617;
-            background-image: 
-                radial-gradient(circle at 20% 30%, rgba(0, 242, 255, 0.05) 0%, transparent 40%),
-                radial-gradient(circle at 80% 70%, rgba(255, 170, 0, 0.05) 0%, transparent 40%);
-            color: #f8fafc;
-            font-family: 'Quicksand', sans-serif;
-            height: 100vh; overflow: hidden;
-            display: flex; justify-content: center; align-items: center;
+            margin: 0; padding: 20px 0;
+            background: var(--bg-dark);
+            background-image: linear-gradient(to bottom, #020617, #0f172a);
+            color: #f8fafc; font-family: 'Be Vietnam Pro', sans-serif;
+            display: flex; flex-direction: column; align-items: center;
         }
 
-        /* --- BACKGROUND DECORATION --- */
-        .bg-icon { position: absolute; z-index: -1; opacity: 0.2; filter: blur(1px); }
-
-        /* --- SCREENS --- */
         .screen {
             display: none; flex-direction: column; align-items: center;
-            width: 95%; max-width: 1000px; height: 90vh;
-            padding: 40px; border-radius: 30px;
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            width: 90%; max-width: 900px; padding: 30px;
+            background: var(--glass); backdrop-filter: blur(15px);
+            border-radius: 24px; border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4); margin-bottom: 50px;
         }
         .active { display: flex; }
 
-        /* --- HEADER & TITLES --- */
-        h1 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 2.5rem; margin: 0;
-            background: linear-gradient(to right, var(--neon-blue), #7dd3fc);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            text-transform: uppercase; letter-spacing: 4px;
+        /* RADAR CAMERA CỐ ĐỊNH Ở GÓC (KHI TRƯỢT VẪN THẤY) */
+        .radar-box {
+            position: fixed; top: 20px; right: 20px;
+            width: 150px; height: 110px; z-index: 100;
+            border-radius: 12px; border: 2px solid #1e293b;
+            overflow: hidden; background: #000; transition: 0.3s;
         }
-        .info-bar { color: #94a3b8; font-weight: 600; margin-top: 10px; }
-
-        /* --- DASHBOARD LAYOUT (GAME SCREEN) --- */
-        .game-grid {
-            display: grid;
-            grid-template-columns: 250px 1fr;
-            grid-template-rows: auto 1fr;
-            gap: 20px; width: 100%; height: 100%; margin-top: 30px;
-        }
-
-        .sidebar { display: flex; flex-direction: column; gap: 20px; }
-
-        .cam-container {
-            width: 100%; aspect-ratio: 4/3;
-            background: #000; border-radius: 20px; overflow: hidden;
-            border: 2px solid #1e293b; position: relative;
-        }
-        .cam-container.active-detect { border-color: var(--neon-blue); box-shadow: 0 0 20px rgba(0, 242, 255, 0.3); }
+        .radar-box.active-detect { border-color: var(--neon-blue); box-shadow: 0 0 15px var(--neon-blue); }
         video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
 
-        .stats-box {
-            background: rgba(255,255,255,0.03); border-radius: 20px; padding: 20px;
-            border: 1px solid var(--glass-border);
-        }
-        .stat-label { font-size: 0.8rem; color: #64748b; text-transform: uppercase; }
-        .stat-value { font-family: 'Orbitron', sans-serif; font-size: 1.5rem; color: var(--neon-amber); }
-
-        .main-content { display: flex; flex-direction: column; gap: 20px; }
-
-        .question-card {
-            background: rgba(255,255,255,0.05);
-            padding: 40px; border-radius: 25px;
-            font-size: 1.6rem; font-weight: 700; line-height: 1.4;
-            border-left: 10px solid var(--neon-blue);
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+        h1 {
+            font-family: 'Orbitron', sans-serif; font-size: 2rem; text-align: center;
+            background: linear-gradient(45deg, var(--neon-blue), #fff);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
         }
 
-        .options-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+        .stats-sticky {
+            position: sticky; top: 0; z-index: 90; width: 100%;
+            display: flex; justify-content: space-around; padding: 15px;
+            background: rgba(15, 23, 42, 0.95); border-bottom: 1px solid var(--neon-blue);
+            margin-bottom: 30px; font-family: 'Orbitron';
         }
 
-        .option-btn {
-            background: rgba(255,255,255,0.03);
-            border: 2px solid #334155; padding: 25px; border-radius: 20px;
-            font-size: 1.1rem; text-align: left; transition: 0.3s;
-            position: relative; overflow: hidden; cursor: none;
+        .question-box {
+            width: 100%; background: rgba(255,255,255,0.03);
+            padding: 30px; border-radius: 20px; font-size: 1.5rem;
+            font-weight: 800; border-left: 8px solid var(--neon-blue); margin-bottom: 25px;
         }
-        .option-btn.selected { border-color: var(--neon-amber); background: rgba(255, 170, 0, 0.1); transform: scale(1.02); }
-        .option-btn.correct { background: var(--neon-green) !important; border-color: var(--neon-green); color: #000; font-weight: 700; }
-        .option-btn.wrong { background: var(--neon-red) !important; border-color: var(--neon-red); color: #fff; }
 
-        .progress-filler {
-            position: absolute; bottom: 0; left: 0; height: 6px;
+        .options-list { width: 100%; display: flex; flex-direction: column; gap: 15px; }
+        
+        .opt-card {
+            background: rgba(255,255,255,0.05); padding: 25px; border-radius: 18px;
+            border: 2px solid #334155; position: relative; overflow: hidden;
+            transition: 0.3s; font-size: 1.2rem; display: flex; align-items: center;
+        }
+        .opt-card.hovered { border-color: var(--neon-amber); background: rgba(255,170,0,0.1); transform: translateX(10px); }
+        .opt-card.correct { background: var(--neon-green) !important; color: #000; font-weight: 800; border-color: var(--neon-green); }
+        .opt-card.wrong { background: var(--neon-red) !important; color: #fff; border-color: var(--neon-red); }
+
+        .progress-fill {
+            position: absolute; left: 0; bottom: 0; height: 5px;
             background: var(--neon-amber); width: 0%; transition: width 0.05s linear;
         }
 
-        /* --- BUTTONS --- */
-        .primary-btn {
-            font-family: 'Orbitron', sans-serif;
-            padding: 15px 50px; border-radius: 50px; border: none;
-            background: linear-gradient(45deg, var(--neon-blue), #0ea5e9);
-            color: #000; font-weight: 900; cursor: pointer;
-            transition: 0.3s; margin-top: 30px; letter-spacing: 2px;
+        .btn-main {
+            font-family: 'Orbitron'; padding: 15px 40px; border-radius: 50px;
+            background: var(--neon-blue); color: #000; border: none; font-weight: 900;
+            cursor: pointer; margin-top: 20px; box-shadow: 0 0 20px rgba(0,242,255,0.4);
         }
-        .primary-btn:hover { transform: scale(1.05); box-shadow: 0 0 30px var(--neon-blue); }
 
-        /* --- LOADING --- */
         #loader {
-            position: fixed; inset: 0; background: #020617;
-            display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 999;
+            position: fixed; inset: 0; background: #020617; z-index: 999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-        .liquid {
-            width: 60px; height: 80px; border: 4px solid var(--neon-blue);
-            border-radius: 0 0 20px 20px; position: relative; overflow: hidden;
-        }
-        .liquid::after {
-            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 60%;
-            background: var(--neon-blue); animation: wave 2s infinite linear;
-        }
-        @keyframes wave { 0% { height: 20%; } 50% { height: 80%; } 100% { height: 20%; } }
     </style>
 </head>
 <body>
 
     <div id="loader">
-        <div class="liquid"></div>
-        <p style="margin-top: 20px; font-family: 'Orbitron'; color: var(--neon-blue);">System Initializing...</p>
+        <h2 style="font-family: 'Orbitron'; color: var(--neon-blue);">SHUFFLING DATA...</h2>
     </div>
 
+    <div class="radar-box" id="radar"><video id="input_video"></video></div>
+
     <div id="start-screen" class="screen active">
-        <div style="text-align: center;">
-            <p style="letter-spacing: 5px; color: var(--neon-blue); margin-bottom: 10px;">CHEMISTRY TERMINAL</p>
-            <h1>METAL ELEMENTS</h1>
-            <div class="info-bar">User: TRẦN MINH TRIỂN | Class: 12A1</div>
+        <h1>KIM LOẠI HÓA HỌC 12</h1>
+        <p style="color: var(--neon-blue); font-weight: 700;">Học sinh: Trần Minh Triển - Lớp: 12A1</p>
+        <div style="text-align: left; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 15px; margin: 20px 0;">
+            <p>🧪 <b>Cơ chế xáo trộn:</b> Mỗi lượt chơi câu hỏi sẽ đảo thứ tự ngẫu nhiên.</p>
+            <p>🖱️ <b>Bố cục:</b> Bạn có thể trượt trang xuống dưới để đọc đáp án rõ hơn.</p>
+            <p>👤 <b>Radar:</b> Camera nằm ở góc phải màn hình để theo dõi cử động của bạn.</p>
         </div>
-
-        <div style="margin: 40px 0; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
-            <div style="background: rgba(255,255,255,0.02); padding: 30px; border-radius: 25px; border: 1px solid var(--glass-border);">
-                <h3 style="color: var(--neon-blue); margin-top: 0;">NHIỆM VỤ</h3>
-                <p style="line-height: 1.6; color: #cbd5e1;">Vượt qua 20 câu hỏi về tính chất vật lý và hóa học của kim loại bằng cách sử dụng cảm biến chuyển động khuôn mặt.</p>
-            </div>
-            <div style="background: rgba(255,255,255,0.02); padding: 30px; border-radius: 25px; border: 1px solid var(--glass-border);">
-                <h3 style="color: var(--neon-amber); margin-top: 0;">ĐIỀU KHIỂN</h3>
-                <ul style="padding-left: 20px; color: #cbd5e1; line-height: 1.8;">
-                    <li>Nghiêng <b style="color: #fff;">Trái/Phải</b>: Chọn A / B</li>
-                    <li>Ngẩng <b style="color: #fff;">Lên/Xuống</b>: Chọn C / D</li>
-                    <li>Giữ yên đầu 0.9s để xác nhận.</li>
-                </ul>
-            </div>
-        </div>
-
-        <button class="primary-btn" onclick="startApp()">START MISSION</button>
+        <button class="btn-main" onclick="startApp()">KHỞI CHẠY HỆ THỐNG</button>
     </div>
 
     <div id="game-screen" class="screen">
-        <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
-            <h2 style="font-family: 'Orbitron'; margin: 0; font-size: 1.2rem;">MISSION: METALS</h2>
-            <div id="q-count" style="background: var(--neon-blue); color: #000; padding: 5px 15px; border-radius: 10px; font-weight: 800;">1 / 20</div>
+        <div class="stats-sticky">
+            <span id="q-count">CÂU: 1/20</span>
+            <span id="score" style="color: var(--neon-amber);">ĐIỂM: 000</span>
         </div>
 
-        <div class="game-grid">
-            <div class="sidebar">
-                <div class="cam-container" id="cam-box">
-                    <video id="input_video"></video>
-                    <div style="position: absolute; top: 10px; left: 10px; font-size: 0.6rem; color: var(--neon-blue); border: 1px solid var(--neon-blue); padding: 2px 5px;">LIVE RADAR</div>
-                </div>
-                <div class="stats-box">
-                    <div class="stat-label">Total Score</div>
-                    <div id="score" class="stat-value">000</div>
-                </div>
-                <div class="stats-box" style="margin-top: auto;">
-                    <div class="stat-label">Status</div>
-                    <div id="status-text" style="color: var(--neon-green); font-weight: 700; font-size: 0.9rem;">READY</div>
-                </div>
-            </div>
+        <div id="question" class="question-box">Đang chuẩn bị câu hỏi...</div>
 
-            <div class="main-content">
-                <div id="question" class="question-card">Loading question data...</div>
-                <div class="options-grid">
-                    <div class="option-btn" id="opt-A">
-                        <div style="color: var(--neon-blue); font-weight: 900; margin-bottom: 5px;">A</div>
-                        <span id="txt-A"></span>
-                        <div class="progress-filler" id="pb-A"></div>
-                    </div>
-                    <div class="option-btn" id="opt-B">
-                        <div style="color: var(--neon-blue); font-weight: 900; margin-bottom: 5px;">B</div>
-                        <span id="txt-B"></span>
-                        <div class="progress-filler" id="pb-B"></div>
-                    </div>
-                    <div class="option-btn" id="opt-C">
-                        <div style="color: var(--neon-blue); font-weight: 900; margin-bottom: 5px;">C</div>
-                        <span id="txt-C"></span>
-                        <div class="progress-filler" id="pb-C"></div>
-                    </div>
-                    <div class="option-btn" id="opt-D">
-                        <div style="color: var(--neon-blue); font-weight: 900; margin-bottom: 5px;">D</div>
-                        <span id="txt-D"></span>
-                        <div class="progress-filler" id="pb-D"></div>
-                    </div>
-                </div>
+        <div class="options-list">
+            <div class="opt-card" id="opt-A">
+                <span style="color: var(--neon-blue); font-weight: 900; margin-right: 15px;">A</span>
+                <span id="txt-A"></span>
+                <div class="progress-fill" id="pb-A"></div>
+            </div>
+            <div class="opt-card" id="opt-B">
+                <span style="color: var(--neon-blue); font-weight: 900; margin-right: 15px;">B</span>
+                <span id="txt-B"></span>
+                <div class="progress-fill" id="pb-B"></div>
+            </div>
+            <div class="opt-card" id="opt-C">
+                <span style="color: var(--neon-blue); font-weight: 900; margin-right: 15px;">C</span>
+                <span id="txt-C"></span>
+                <div class="progress-fill" id="pb-C"></div>
+            </div>
+            <div class="opt-card" id="opt-D">
+                <span style="color: var(--neon-blue); font-weight: 900; margin-right: 15px;">D</span>
+                <span id="txt-D"></span>
+                <div class="progress-fill" id="pb-D"></div>
             </div>
         </div>
     </div>
 
     <div id="result-screen" class="screen">
-        <h1 style="margin-top: 50px;">MISSION COMPLETE</h1>
-        <div id="final-stats" style="margin: 40px 0; text-align: center;">
-            <div style="font-size: 4rem; font-family: 'Orbitron'; color: var(--neon-amber);" id="final-score">0</div>
-            <p style="font-size: 1.5rem; color: var(--neon-blue);" id="rank-text">RANK: S</p>
-        </div>
-        <div id="user-info-final" style="background: rgba(255,255,255,0.05); padding: 20px 60px; border-radius: 20px; border: 1px solid var(--glass-border);">
-            <p>Cadet: <b>Trần Minh Triển</b></p>
-            <p>Unit: <b>12A1</b></p>
-        </div>
-        <button class="primary-btn" onclick="location.reload()">RE-INITIALIZE</button>
+        <h1>HOÀN THÀNH NHIỆM VỤ</h1>
+        <div style="font-size: 3rem; color: var(--neon-amber); margin: 20px 0;" id="final-score">0</div>
+        <p id="rank-text" style="font-size: 1.5rem;"></p>
+        <button class="btn-main" onclick="location.reload()">CHƠI LẠI (CÂU HỎI MỚI)</button>
     </div>
 
     <script>
-        // --- DATA ---
-        const questions = [
-            { q: "Kim loại dẫn điện tốt nhất trong các kim loại sau?", a: "Bạc (Ag)", b: "Đồng (Cu)", c: "Vàng (Au)", d: "Nhôm (Al)", ans: "A" },
-            { q: "Kim loại có nhiệt độ nóng chảy cao nhất?", a: "Sắt", b: "Vonfram", c: "Thủy ngân", d: "Đồng", ans: "B" },
-            { q: "Tính chất vật lý nào KHÔNG phải tính chất chung của kim loại?", a: "Dẫn điện", b: "Dẫn nhiệt", c: "Tính cứng", d: "Ánh kim", ans: "C" },
-            { q: "Kim loại nào sau đây là kim loại kiềm thổ?", a: "Natri", b: "Canxi", c: "Nhôm", d: "Sắt", ans: "B" },
-            { q: "Kim loại nào tan được trong dung dịch NaOH?", a: "Sắt", b: "Đồng", c: "Nhôm", d: "Bạc", ans: "C" },
-            { q: "Quặng Boxit là nguyên liệu sản xuất kim loại nào?", a: "Magie", b: "Nhôm", c: "Sắt", d: "Đồng", ans: "B" },
-            { q: "Ở nhiệt độ thường, kim loại nào ở trạng thái lỏng?", a: "Thủy ngân", b: "Chì", c: "Thiếc", d: "Natri", ans: "A" },
-            { q: "Kim loại có tính khử mạnh nhất là?", a: "Sắt", b: "Đồng", c: "Kali", d: "Vàng", ans: "C" },
-            { q: "Hợp kim của Đồng và Kẽm có tên gọi là gì?", a: "Đồng bạch", b: "Đồng thau", c: "Thép", d: "Đura", ans: "B" },
-            { q: "Để bảo vệ vỏ tàu biển bằng thép, người ta gắn tấm kim loại nào?", a: "Đồng", b: "Kẽm", c: "Bạc", d: "Chì", ans: "B" },
-            { q: "Kim loại dẻo nhất có thể dát thành lá cực mỏng?", a: "Bạc", b: "Vàng", c: "Đồng", d: "Nhôm", ans: "B" },
-            { q: "Thủy luyện dùng để điều chế các kim loại có tính khử?", a: "Mạnh", b: "Yếu và Trung bình", c: "Rất mạnh", d: "Mọi kim loại", ans: "B" },
-            { q: "Cấu hình e lớp ngoài cùng của kim loại kiềm là?", a: "ns1", b: "ns2", c: "ns2np1", d: "ns2np2", ans: "A" },
-            { q: "Sắt bị thụ động hóa trong dung dịch nào?", a: "HCl loãng", b: "H2SO4 đặc, nguội", c: "H2SO4 loãng", d: "CuSO4", ans: "B" },
-            { q: "Kim loại nhẹ nhất (D nhỏ nhất) là?", a: "Liti", b: "Natri", c: "Nhôm", d: "Kali", ans: "A" },
-            { q: "Trong công nghiệp, Nhôm được điều chế bằng phương pháp?", a: "Thủy luyện", b: "Nhiệt luyện", c: "Điện phân nóng chảy", d: "Điện phân dung dịch", ans: "C" },
-            { q: "Thành phần chính của quặng Hematit đỏ là?", a: "Fe3O4", b: "Fe2O3", c: "FeS2", d: "FeCO3", ans: "B" },
-            { q: "Kim loại nào cứng nhất (có thể cắt thủy tinh)?", a: "Sắt", b: "Crom", c: "Kim cương", d: "Vonfram", ans: "B" },
-            { q: "Dãy kim loại tác dụng được với nước ở nhiệt độ thường?", a: "K, Na, Ca, Ba", b: "Cu, Ag, Au", c: "Fe, Zn, Al", d: "Mg, Al, Ca", ans: "A" },
-            { q: "Ăn mòn hóa học KHÔNG phát sinh yếu tố nào?", a: "Nhiệt lượng", b: "Dòng điện", c: "Chất mới", d: "Sự oxi hóa", ans: "B" }
+        const rawQuestions = [
+            { q: "Kim loại dẫn điện tốt nhất?", a: "Bạc", b: "Đồng", c: "Vàng", d: "Sắt", ans: "A" },
+            { q: "Vonfram được dùng làm dây tóc bóng đèn vì?", a: "Dẫn điện tốt", b: "Nhiệt độ nóng chảy cao", c: "Rẻ tiền", d: "Kim loại nhẹ", ans: "B" },
+            { q: "Kim loại nào là kim loại kiềm?", a: "Magie", b: "Canxi", c: "Natri", d: "Nhôm", ans: "C" },
+            { q: "Để bảo quản Natri, người ta ngâm trong?", a: "Rượu", b: "Nước", c: "Dầu hỏa", d: "Giấm", ans: "C" },
+            { q: "Kim loại phản ứng với nước ở nhiệt độ thường?", a: "Sắt", b: "Đồng", c: "Canxi", d: "Bạc", ans: "C" },
+            { q: "Hợp kim nào của Sắt có hàm lượng Cacbon thấp hơn?", a: "Gang", b: "Thép", c: "Đồng thau", d: "Đura", ans: "B" },
+            { q: "Kim loại nào dẻo nhất?", a: "Đồng", b: "Vàng", c: "Nhôm", d: "Bạc", ans: "B" },
+            { q: "Hòa tan Nhôm trong NaOH sinh ra khí nào?", a: "Oxi", b: "Clo", c: "Hidro", d: "Nito", ans: "C" },
+            { q: "Kim loại cứng nhất là?", a: "Sắt", b: "Crom", c: "Đồng", d: "Kẽm", ans: "B" },
+            { q: "Kim loại nhẹ nhất (D nhỏ nhất)?", a: "Liti", b: "Natri", c: "Kali", d: "Nhôm", ans: "A" },
+            { q: "Quặng Boxit dùng sản xuất?", a: "Sắt", b: "Đồng", c: "Nhôm", d: "Magie", ans: "C" },
+            { q: "Sắt bị gỉ trong không khí ẩm là loại ăn mòn?", a: "Hóa học", b: "Điện hóa", c: "Vật lý", d: "Sinh học", ans: "B" },
+            { q: "Dãy kim loại tác dụng với HCl?", a: "Cu, Ag", b: "Fe, Mg", c: "Au, Pt", d: "Hg, Ag", ans: "B" },
+            { q: "Kim loại nào lỏng ở nhiệt độ thường?", a: "Chì", b: "Thủy ngân", c: "Thiếc", d: "Kẽm", ans: "B" },
+            { q: "Tính chất hóa học đặc trưng của kim loại?", a: "Tính khử", b: "Tính oxi hóa", c: "Tính Axit", d: "Tính Bazơ", ans: "A" },
+            { q: "Dãy hoạt động hóa học đúng?", a: "K, Na, Mg, Al", b: "Al, Mg, Na, K", c: "Mg, K, Al, Na", d: "Na, K, Mg, Al", ans: "A" },
+            { q: "Hợp kim Đồng - Kẽm gọi là?", a: "Đồng thau", b: "Đồng bạch", c: "Gang", d: "Thép", ans: "A" },
+            { q: "Cấu hình e lớp ngoài cùng kim loại kiềm thổ?", a: "ns1", b: "ns2", c: "ns2np1", d: "ns2np2", ans: "B" },
+            { q: "Kim loại giải phóng H2 khi gặp H2SO4 loãng?", a: "Cu", b: "Ag", c: "Mg", d: "Au", ans: "C" },
+            { q: "Gang có chứa 2-5% nguyên tố nào?", a: "Sắt", b: "Cacbon", c: "Nito", d: "Lưu huỳnh", ans: "B" }
         ];
 
-        // --- CORE LOGIC ---
+        let questions = [];
         let currentIdx = 0, score = 0, isLocked = false, selectedKey = null, holdValue = 0;
         const HOLD_REQ = 18;
-        const DEADZONE = 0.15;
+
+        // HÀM XÁO TRỘN FISHER-YATES
+        function shuffleQuestions(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSfx(f, t, d, v=0.08) {
@@ -282,10 +212,11 @@
             width: 400, height: 300 
         });
 
-        window.onload = () => { setTimeout(() => document.getElementById('loader').style.display='none', 2000); };
+        window.onload = () => { setTimeout(() => document.getElementById('loader').style.display='none', 1500); };
 
         function startApp() {
             if (audioCtx.state === 'suspended') audioCtx.resume();
+            questions = shuffleQuestions([...rawQuestions]); // XÁO TRỘN KHI BẮT ĐẦU
             document.getElementById('start-screen').classList.remove('active');
             document.getElementById('game-screen').classList.add('active');
             camera.start();
@@ -295,12 +226,10 @@
         function showQuestion() {
             if (currentIdx >= questions.length) { endGame(); return; }
             isLocked = false; selectedKey = null; holdValue = 0;
-            document.getElementById('status-text').innerText = "SCANNING...";
-            document.getElementById('status-text').style.color = "var(--neon-blue)";
             
-            document.querySelectorAll('.option-btn').forEach(el => {
-                el.className = 'option-btn';
-                el.querySelector('.progress-filler').style.width = '0%';
+            document.querySelectorAll('.opt-card').forEach(el => {
+                el.className = 'opt-card';
+                el.querySelector('.progress-fill').style.width = '0%';
             });
 
             const q = questions[currentIdx];
@@ -309,13 +238,14 @@
             document.getElementById('txt-B').innerText = q.b;
             document.getElementById('txt-C').innerText = q.c;
             document.getElementById('txt-D').innerText = q.d;
-            document.getElementById('q-count').innerText = `${currentIdx+1} / 20`;
+            document.getElementById('q-count').innerText = `CÂU: ${currentIdx+1} / 20`;
+            window.scrollTo(0, 0); // Tự động cuộn lên đầu khi sang câu mới
         }
 
         function onResults(results) {
-            const camBox = document.getElementById('cam-box');
+            const radar = document.getElementById('radar');
             if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
-                camBox.classList.add('active-detect');
+                radar.classList.add('active-detect');
                 if (isLocked) return;
 
                 const lm = results.multiFaceLandmarks[0];
@@ -324,10 +254,10 @@
                 const v = (nose.y - top.y) / (bot.y - top.y);
 
                 let key = null;
-                if (h < 0.5 - DEADZONE) key = 'A';
-                else if (h > 0.5 + DEADZONE) key = 'B';
-                else if (v < 0.5 - (DEADZONE-0.03)) key = 'C';
-                else if (v > 0.5 + (DEADZONE-0.03)) key = 'D';
+                if (h < 0.35) key = 'A';
+                else if (h > 0.65) key = 'B';
+                else if (v < 0.45) key = 'C';
+                else if (v > 0.55) key = 'D';
 
                 if (key && key === selectedKey) {
                     holdValue++;
@@ -336,41 +266,29 @@
                     if (holdValue >= HOLD_REQ) confirmAnswer(key);
                 } else {
                     selectedKey = key; holdValue = 0;
-                    document.querySelectorAll('.option-btn').forEach(el => {
-                        el.classList.remove('selected');
-                        el.querySelector('.progress-filler').style.width = '0%';
+                    document.querySelectorAll('.opt-card').forEach(el => {
+                        el.classList.remove('hovered');
+                        el.querySelector('.progress-fill').style.width = '0%';
                     });
-                    if (key) {
-                        document.getElementById(`opt-${key}`).classList.add('selected');
-                        document.getElementById('status-text').innerText = `TARGET: ${key}`;
-                        document.getElementById('status-text').style.color = "var(--neon-amber)";
-                    } else {
-                        document.getElementById('status-text').innerText = "SCANNING...";
-                        document.getElementById('status-text').style.color = "var(--neon-blue)";
-                    }
+                    if (key) document.getElementById(`opt-${key}`).classList.add('hovered');
                 }
-            } else { camBox.classList.remove('active-detect'); }
+            } else { radar.classList.remove('active-detect'); }
         }
 
         function confirmAnswer(key) {
             isLocked = true;
             const ans = questions[currentIdx].ans;
-            document.querySelectorAll('.option-btn').forEach(el => el.classList.remove('selected'));
             
             if (key === ans) {
                 document.getElementById(`opt-${key}`).classList.add('correct');
                 score += 10;
                 playSfx(523, 'sine', 0.2); setTimeout(()=>playSfx(659, 'sine', 0.3), 100);
-                document.getElementById('status-text').innerText = "CORRECT";
-                document.getElementById('status-text').style.color = "var(--neon-green)";
             } else {
                 document.getElementById(`opt-${key}`).classList.add('wrong');
                 document.getElementById(`opt-${ans}`).classList.add('correct');
                 playSfx(150, 'sawtooth', 0.4, 0.1);
-                document.getElementById('status-text').innerText = "FAILED";
-                document.getElementById('status-text').style.color = "var(--neon-red)";
             }
-            document.getElementById('score').innerText = score.toString().padStart(3, '0');
+            document.getElementById('score').innerText = `ĐIỂM: ${score.toString().padStart(3, '0')}`;
             setTimeout(() => { currentIdx++; showQuestion(); }, 1500);
         }
 
@@ -378,11 +296,7 @@
             document.getElementById('game-screen').classList.remove('active');
             document.getElementById('result-screen').classList.add('active');
             document.getElementById('final-score').innerText = score;
-            let rank = "C";
-            if(score >= 180) rank = "S";
-            else if(score >= 150) rank = "A";
-            else if(score >= 120) rank = "B";
-            document.getElementById('rank-text').innerText = `RANK: ${rank}`;
+            document.getElementById('rank-text').innerText = score >= 180 ? "XẾP LOẠI: XUẤT SẮC" : "XẾP LOẠI: HOÀN THÀNH";
             camera.stop();
         }
     </script>
