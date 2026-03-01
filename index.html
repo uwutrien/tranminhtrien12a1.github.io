@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Game Hóa học 12 – Đại cương về kim loại</title>
+
+<script defer src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
+
+<style>
+body{
+font-family:Arial;
+background:#0f172a;
+color:white;
+text-align:center;
+margin:0;
+padding:0;
+}
+
+.container{
+max-width:800px;
+margin:auto;
+padding:20px;
+}
+
+h1{
+color:#22c55e;
+}
+
+button{
+padding:12px 20px;
+font-size:18px;
+border:none;
+border-radius:10px;
+background:#22c55e;
+color:white;
+cursor:pointer;
+margin-top:15px;
+}
+
+.option{
+background:#1e293b;
+padding:15px;
+margin:10px;
+border-radius:10px;
+cursor:pointer;
+}
+
+.option.correct{background:#16a34a;}
+.option.wrong{background:#dc2626;}
+
+#cameraBox{
+position:fixed;
+bottom:10px;
+right:10px;
+border:2px solid white;
+border-radius:10px;
+overflow:hidden;
+}
+
+#status{
+margin-top:10px;
+font-size:14px;
+color:#38bdf8;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Game Hóa học 12 – Đại cương về kim loại</h1>
+<p>Học sinh: Trần Minh Triển | Lớp 12A1</p>
+
+<div id="startScreen">
+<button onclick="startGame()">Bắt đầu</button>
+</div>
+
+<div id="quizScreen" style="display:none">
+
+<h3 id="progress"></h3>
+<h2 id="question"></h2>
+
+<div id="options"></div>
+
+<p id="status">Đang nhận diện khuôn mặt...</p>
+
+</div>
+
+<div id="resultScreen" style="display:none">
+<h2 id="resultText"></h2>
+<button onclick="location.reload()">Chơi lại</button>
+</div>
+
+</div>
+
+<div id="cameraBox">
+<video id="video" width="200" height="150" autoplay muted></video>
+</div>
+
+<script>
+
+const questions=[
+{q:"Kim loại nào phản ứng mạnh với nước ở nhiệt độ thường?",A:"Fe",B:"Na",C:"Cu",D:"Ag",c:"B"},
+{q:"Liên kết kim loại là gì?",A:"Lực hút ion kim loại và electron tự do",B:"Liên kết ion",C:"Liên kết cộng hóa trị",D:"Liên kết hidro",c:"A"},
+{q:"Kim loại thường đóng vai trò gì trong phản ứng?",A:"Chất khử",B:"Chất oxi hóa",C:"Dung môi",D:"Chất xúc tác",c:"A"},
+{q:"Kim loại dẫn điện tốt nhất?",A:"Cu",B:"Ag",C:"Fe",D:"Al",c:"B"},
+{q:"Ăn mòn kim loại là gì?",A:"Phá hủy kim loại do phản ứng hóa học",B:"Nóng chảy",C:"Bay hơi",D:"Đông đặc",c:"A"},
+{q:"Có mấy loại ăn mòn kim loại?",A:"1",B:"2",C:"3",D:"4",c:"B"},
+{q:"Kim loại nào không phản ứng với HCl?",A:"Zn",B:"Al",C:"Cu",D:"Fe",c:"C"},
+{q:"Kim loại đứng trước H có thể?",A:"Đẩy H khỏi axit",B:"Không phản ứng",C:"Nhận electron",D:"Tan trong nước",c:"A"},
+{q:"Trong mạng tinh thể kim loại có gì?",A:"Ion kim loại và electron tự do",B:"Phân tử",C:"Ion âm",D:"Phi kim",c:"A"},
+{q:"Tính dẻo của kim loại là?",A:"Kéo sợi dát mỏng",B:"Tan nước",C:"Bay hơi",D:"Giòn",c:"A"},
+{q:"Kim loại nào hoạt động mạnh nhất?",A:"K",B:"Fe",C:"Cu",D:"Ag",c:"A"},
+{q:"Kim loại nào không tác dụng với nước?",A:"Na",B:"K",C:"Cu",D:"Ca",c:"C"},
+{q:"Phương pháp điều chế Na?",A:"Điện phân nóng chảy",B:"Nhiệt luyện",C:"Thủy luyện",D:"Kết tinh",c:"A"},
+{q:"Fe + Cu2+ → Fe2+ + Cu. Fe là?",A:"Chất khử",B:"Chất oxi hóa",C:"Dung môi",D:"Xúc tác",c:"A"},
+{q:"Kim loại nào phản ứng với CuSO4?",A:"Fe",B:"Cu",C:"Ag",D:"Au",c:"A"},
+{q:"Kim loại nặng là kim loại có?",A:"Khối lượng riêng lớn",B:"Khối lượng nhỏ",C:"Màu sáng",D:"Tan nước",c:"A"},
+{q:"Kim loại nào dùng thủy luyện?",A:"Cu",B:"Na",C:"K",D:"Ca",c:"A"},
+{q:"Trong dãy điện hóa kim loại càng trái thì?",A:"Tính khử mạnh",B:"Yếu",C:"Không phản ứng",D:"Tan nước",c:"A"},
+{q:"Kim loại dẫn nhiệt tốt?",A:"Ag",B:"S",C:"Cl",D:"O",c:"A"},
+{q:"Ăn mòn điện hóa xảy ra khi?",A:"Kim loại trong dung dịch điện li",B:"Trong chân không",C:"Trong khí khô",D:"Trong dầu",c:"A"},
+{q:"Kim loại nào phản ứng với nước tạo kiềm?",A:"Na",B:"Cu",C:"Ag",D:"Fe",c:"A"},
+{q:"Kim loại nào yếu nhất?",A:"Au",B:"Na",C:"K",D:"Ca",c:"A"},
+{q:"Kim loại có electron hóa trị?",A:"1-3",B:"5-7",C:"8",D:"0",c:"A"},
+{q:"Fe thuộc nhóm kim loại?",A:"Chuyển tiếp",B:"Kiềm",C:"Kiềm thổ",D:"Phi kim",c:"A"},
+{q:"Kim loại nào dễ bị ăn mòn?",A:"Fe",B:"Au",C:"Pt",D:"Ag",c:"A"},
+{q:"Phản ứng kim loại thường là?",A:"Oxi hóa khử",B:"Trùng hợp",C:"Este hóa",D:"Phân hủy",c:"A"},
+{q:"Kim loại nào mềm?",A:"Na",B:"Fe",C:"Cu",D:"Zn",c:"A"},
+{q:"Kim loại nào dẫn điện tốt?",A:"Cu",B:"S",C:"Cl",D:"N",c:"A"},
+{q:"Kim loại nào phản ứng với nước mạnh?",A:"K",B:"Fe",C:"Cu",D:"Ag",c:"A"},
+{q:"Liên kết kim loại tạo nên?",A:"Tính dẫn điện",B:"Màu sắc",C:"Mùi",D:"Tan nước",c:"A"}
+];
+
+let index=0;
+let score=0;
+let selected=null;
+
+function startGame(){
+document.getElementById("startScreen").style.display="none";
+document.getElementById("quizScreen").style.display="block";
+showQuestion();
+}
+
+function showQuestion(){
+selected=null;
+let q=questions[index];
+document.getElementById("progress").innerText=`Câu ${index+1}/30`;
+document.getElementById("question").innerText=q.q;
+
+let html="";
+["A","B","C","D"].forEach(k=>{
+html+=`<div class="option" id="opt${k}">${k}. ${q[k]}</div>`;
+});
+document.getElementById("options").innerHTML=html;
+}
+
+function selectAnswer(letter){
+selected=letter;
+}
+
+function confirmAnswer(){
+if(!selected)return;
+
+let q=questions[index];
+let opt=document.getElementById("opt"+selected);
+
+if(selected===q.c){
+score++;
+opt.classList.add("correct");
+}else{
+opt.classList.add("wrong");
+}
+
+setTimeout(()=>{
+index++;
+if(index>=questions.length){
+endGame();
+}else{
+showQuestion();
+}
+},2000);
+}
+
+function endGame(){
+document.getElementById("quizScreen").style.display="none";
+document.getElementById("resultScreen").style.display="block";
+document.getElementById("resultText").innerText=`Bạn trả lời đúng: ${score}/30 câu`;
+}
+
+const video=document.getElementById("video");
+
+navigator.mediaDevices.getUserMedia({video:true})
+.then(stream=>video.srcObject=stream);
+
+async function detectFace(){
+
+await faceapi.nets.tinyFaceDetector.loadFromUri("https://cdn.jsdelivr.net/npm/face-api.js/weights");
+
+setInterval(async()=>{
+
+const result=await faceapi.detectSingleFace(video,new faceapi.TinyFaceDetectorOptions());
+
+if(!result)return;
+
+let yaw=result.detection.box.x;
+
+if(yaw<100){
+document.getElementById("status").innerText="Nghiêng trái";
+selectAnswer("A");
+}
+
+if(yaw>200){
+document.getElementById("status").innerText="Nghiêng phải";
+selectAnswer("B");
+}
+
+},1000);
+
+}
+
+detectFace();
+
+video.addEventListener("click",confirmAnswer);
+
+</script>
+
+</body>
+</html>
