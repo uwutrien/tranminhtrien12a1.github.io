@@ -1,354 +1,557 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Hóa Học - Đại Cương Về Kim Loại</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection"></script>
 
-<title>GAME HÓA HỌC – KIM LOẠI</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap');
 
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh"></script>
+        :root {
+            --bg-color: #0f172a;
+            --primary: #3b82f6;
+            --primary-glow: rgba(59, 130, 246, 0.6);
+            --correct: #22c55e;
+            --incorrect: #ef4444;
+            --hover: #eab308;
+            --text: #f8fafc;
+        }
 
-<style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+        }
 
-body{
-margin:0;
-font-family:Segoe UI;
-background:linear-gradient(135deg,#1f4037,#99f2c8);
-text-align:center;
-color:white;
-}
+        body {
+            background-color: var(--bg-color);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
 
-h1{
-margin-top:15px;
-font-size:30px;
-text-shadow:0 2px 5px rgba(0,0,0,0.3);
-}
+        .screen {
+            display: none;
+            width: 100%;
+            max-width: 900px;
+            padding: 20px;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
 
-button{
-padding:14px 28px;
-font-size:18px;
-border:none;
-border-radius:12px;
-background:#ff7675;
-color:white;
-cursor:pointer;
-margin:10px;
-box-shadow:0 4px 10px rgba(0,0,0,0.3);
-}
+        .active-screen {
+            display: flex;
+        }
 
-button:hover{
-transform:scale(1.05);
-}
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-#game{
-display:none;
-}
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px var(--primary-glow);
+            color: #60a5fa;
+        }
 
-.camera-box{
-position:relative;
-width:320px;
-margin:auto;
-}
+        .btn {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 30px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
 
-video{
-width:100%;
-border-radius:15px;
-border:4px solid white;
-}
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px var(--primary-glow);
+        }
 
-canvas{
-position:absolute;
-left:0;
-top:0;
-}
+        /* Instructions Screen */
+        .instruction-box {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: left;
+            border: 1px solid #334155;
+            width: 100%;
+            max-width: 600px;
+        }
 
-#question{
-font-size:22px;
-margin-top:15px;
-padding:10px;
-}
+        /* Game Screen */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
 
-.answers{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:15px;
-width:90%;
-max-width:500px;
-margin:auto;
-margin-top:10px;
-}
+        .video-container {
+            position: relative;
+            width: 320px;
+            height: 240px;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 3px solid var(--primary);
+            box-shadow: 0 0 20px var(--primary-glow);
+            margin-bottom: 20px;
+        }
 
-.answer{
-background:#2c3e50;
-padding:15px;
-border-radius:12px;
-font-size:18px;
-transition:0.3s;
-}
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1); /* Mirror */
+        }
 
-.highlight{
-background:#f1c40f;
-transform:scale(1.05);
-}
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform: scaleX(-1);
+            pointer-events: none;
+        }
 
-.correct{
-background:#2ecc71;
-}
+        .question-box {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 15px;
+            width: 100%;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            border: 1px solid #334155;
+        }
 
-.wrong{
-background:#e74c3c;
-}
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+        }
 
-#progress{
-margin-top:10px;
-font-size:18px;
-}
+        .option {
+            background: #1e293b;
+            border: 2px solid #334155;
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 1.1rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
 
-#result{
-display:none;
-font-size:26px;
-margin-top:30px;
-}
+        .option .text {
+            position: relative;
+            z-index: 2;
+        }
 
-@media (max-width:600px){
+        .option .fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0%;
+            background: var(--hover);
+            opacity: 0.3;
+            z-index: 1;
+            transition: width 0.1s linear;
+        }
 
-h1{font-size:22px}
-.answer{font-size:16px}
+        .option.hovered {
+            border-color: var(--hover);
+            box-shadow: 0 0 15px var(--hover);
+        }
 
-}
+        .option.correct {
+            background: var(--correct);
+            border-color: var(--correct);
+            box-shadow: 0 0 20px var(--correct);
+        }
 
-</style>
+        .option.incorrect {
+            background: var(--incorrect);
+            border-color: var(--incorrect);
+            box-shadow: 0 0 20px var(--incorrect);
+        }
+
+        #loading {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            z-index: 1000;
+            display: none;
+        }
+
+        .result-box {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+        
+        .rank-text {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--hover);
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 600px) {
+            .options-grid { grid-template-columns: 1fr; }
+            h1 { font-size: 1.8rem; }
+        }
+    </style>
 </head>
-
 <body>
 
-<h1>🎮 GAME HÓA HỌC – ĐẠI CƯƠNG KIM LOẠI</h1>
-
-<div id="menu">
-<button onclick="startGame()">Bắt đầu</button>
-<button onclick="alert('Nghiêng trái = A\nNghiêng phải = B\nNgẩng đầu = C\nCúi đầu = D\nGiữ 2 giây để chọn')">
-Hướng dẫn
-</button>
-</div>
-
-<div id="game">
-
-<div class="camera-box">
-<video id="video" autoplay muted playsinline></video>
-<canvas id="canvas"></canvas>
-</div>
-
-<div id="progress"></div>
-<div id="question"></div>
-
-<div class="answers">
-
-<div id="A" class="answer">A</div>
-<div id="B" class="answer">B</div>
-<div id="C" class="answer">C</div>
-<div id="D" class="answer">D</div>
-
-</div>
-
-</div>
-
-<div id="result"></div>
-
-<script>
-
-const video = document.getElementById("video")
-const canvas = document.getElementById("canvas")
-const ctx = canvas.getContext("2d")
-
-let detector
-let score = 0
-let current = 0
-let selected = null
-let holdStart = null
-
-const questions = [
-{q:"Kim loại có tính chất vật lí chung nào?",A:"Dẫn điện tốt",B:"Không dẫn nhiệt",C:"Không dẫn điện",D:"Tan trong nước",correct:"A"},
-{q:"Tính chất hóa học đặc trưng của kim loại là:",A:"Tính oxi hóa",B:"Tính khử",C:"Tính axit",D:"Tính bazơ",correct:"B"},
-{q:"Kim loại phản ứng mạnh với nước?",A:"Na",B:"Fe",C:"Cu",D:"Ag",correct:"A"},
-{q:"Kim loại dẫn điện tốt nhất?",A:"Cu",B:"Ag",C:"Fe",D:"Al",correct:"B"},
-{q:"Kim loại nhẹ nhất?",A:"Li",B:"Na",C:"Fe",D:"Cu",correct:"A"}
-]
-
-function startGame(){
-menu.style.display="none"
-game.style.display="block"
-loadQuestion()
-initCamera()
-}
-
-function loadQuestion(){
-let q=questions[current]
-
-progress.innerText="Câu "+(current+1)+" / "+questions.length
-question.innerText=q.q
-
-A.innerText="A. "+q.A
-B.innerText="B. "+q.B
-C.innerText="C. "+q.C
-D.innerText="D. "+q.D
-}
-
-async function initCamera(){
-
-const stream = await navigator.mediaDevices.getUserMedia({
-video:{facingMode:"user"}
-})
-
-video.srcObject = stream
-
-video.onloadedmetadata = async () => {
-
-video.play()
-
-canvas.width = video.videoWidth
-canvas.height = video.videoHeight
-
-detector = await faceLandmarksDetection.createDetector(
-faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh,
-{runtime:"tfjs"}
-)
-
-detect()
-
-}
-
-}
-
-async function detect(){
-
-ctx.clearRect(0,0,canvas.width,canvas.height)
-
-const faces = await detector.estimateFaces(video)
-
-if(faces.length>0){
-
-const face = faces[0]
-
-const nose = face.keypoints[1]
-const left = face.keypoints[33]
-const right = face.keypoints[263]
-
-const centerX = (left.x+right.x)/2
-const centerY = (left.y+right.y)/2
-
-const dx = nose.x-centerX
-const dy = nose.y-centerY
-
-let choice = null
-
-if(dx < -15) choice="A"
-else if(dx > 15) choice="B"
-else if(dy < -15) choice="C"
-else if(dy > 15) choice="D"
-
-drawFace(face)
-
-highlight(choice)
-
-}
-
-requestAnimationFrame(detect)
-
-}
-
-function drawFace(face){
-
-const box = face.box
-
-ctx.strokeStyle="#00ffcc"
-ctx.lineWidth=3
-
-ctx.strokeRect(
-box.xMin,
-box.yMin,
-box.width,
-box.height
-)
-
-}
-
-function highlight(letter){
-
-if(!letter) return
-
-document.querySelectorAll(".answer")
-.forEach(a=>a.classList.remove("highlight"))
-
-document.getElementById(letter)
-.classList.add("highlight")
-
-if(selected!==letter){
-
-selected=letter
-holdStart=Date.now()
-
-}else{
-
-if(Date.now()-holdStart>2000){
-
-checkAnswer(letter)
-holdStart=Date.now()+9999
-
-}
-
-}
-
-}
-
-function checkAnswer(letter){
-
-let q=questions[current]
-
-if(letter===q.correct){
-
-score+=10
-document.getElementById(letter).classList.add("correct")
-
-}else{
-
-document.getElementById(letter).classList.add("wrong")
-
-}
-
-setTimeout(()=>{
-
-current++
-
-document.querySelectorAll(".answer")
-.forEach(a=>a.classList.remove("highlight","correct","wrong"))
-
-if(current>=questions.length){
-
-endGame()
-
-}else{
-
-loadQuestion()
-
-}
-
-},1200)
-
-}
-
-function endGame(){
-
-game.style.display="none"
-
-result.style.display="block"
-
-result.innerHTML="Điểm của bạn: "+score
-
-}
-
-</script>
-
+    <div id="start-screen" class="screen active-screen">
+        <h1>GAME HÓA HỌC<br>ĐẠI CƯƠNG VỀ KIM LOẠI</h1>
+        <p style="margin-bottom: 30px; color: #94a3b8;">Điều khiển hoàn toàn bằng khuôn mặt của bạn!</p>
+        <button class="btn" onclick="showScreen('instructions-screen')">Hướng dẫn</button>
+        <button class="btn" onclick="startGame()">Bắt đầu ngay</button>
+    </div>
+
+    <div id="instructions-screen" class="screen">
+        <h1>HƯỚNG DẪN CHƠI</h1>
+        <div class="instruction-box">
+            <p>Trò chơi sử dụng Camera để nhận diện hành động của đầu.</p><br>
+            <ul>
+                <li><strong>Nghiêng/Quay đầu sang trái:</strong> Chọn đáp án A</li>
+                <li><strong>Nghiêng/Quay đầu sang phải:</strong> Chọn đáp án B</li>
+                <li><strong>Ngẩng đầu lên:</strong> Chọn đáp án C</li>
+                <li><strong>Cúi đầu xuống:</strong> Chọn đáp án D</li>
+            </ul><br>
+            <p><strong>Cách chọn:</strong> Giữ nguyên tư thế trong <strong>2 giây</strong> để chốt đáp án.</p>
+            <p>Mỗi câu trả lời đúng được +10 điểm. Có tổng cộng 20 câu hỏi.</p>
+        </div>
+        <button class="btn" onclick="showScreen('start-screen')">Quay lại</button>
+    </div>
+
+    <div id="game-screen" class="screen">
+        <div class="header">
+            <div id="progress-text">Câu: 1 / 20</div>
+            <div id="score-text">Điểm: 0</div>
+        </div>
+
+        <div class="video-container">
+            <video id="webcam" autoplay playsinline></video>
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <div id="question-text" class="question-box">Đang tải câu hỏi...</div>
+
+        <div class="options-grid">
+            <div class="option" id="opt-A"><div class="fill" id="fill-A"></div><span class="text">A. </span></div>
+            <div class="option" id="opt-B"><div class="fill" id="fill-B"></div><span class="text">B. </span></div>
+            <div class="option" id="opt-C"><div class="fill" id="fill-C"></div><span class="text">C. </span></div>
+            <div class="option" id="opt-D"><div class="fill" id="fill-D"></div><span class="text">D. </span></div>
+        </div>
+    </div>
+
+    <div id="result-screen" class="screen">
+        <h1>HOÀN THÀNH!</h1>
+        <div class="result-box">Điểm của bạn: <span id="final-score">0</span> / 200</div>
+        <div>Phân loại:</div>
+        <div id="final-rank" class="rank-text">Nhà Hóa Học</div>
+        <button class="btn" onclick="location.reload()">Chơi Lại</button>
+    </div>
+
+    <div id="loading">Đang tải mô hình AI và Camera... Vui lòng đợi!</div>
+
+    <script>
+        // Data Câu hỏi
+        const questions = [
+            { q: "Kim loại có tính chất vật lí chung nào?", a: "Dẫn điện, dẫn nhiệt tốt", b: "Không dẫn nhiệt", c: "Không dẫn điện", d: "Tan trong nước", correct: "A" },
+            { q: "Tính chất hóa học đặc trưng của kim loại là:", a: "Tính oxi hóa", b: "Tính khử", c: "Tính axit", d: "Tính bazơ", correct: "B" },
+            { q: "Kim loại nào sau đây phản ứng mạnh nhất với nước ở điều kiện thường?", a: "Na", b: "Fe", c: "Cu", d: "Ag", correct: "A" },
+            { q: "Kim loại nào cứng nhất, có thể rạch thủng thủy tinh?", a: "Kim cương", b: "Crom (Cr)", c: "Vonfram (W)", d: "Sắt (Fe)", correct: "B" },
+            { q: "Kim loại nào có nhiệt độ nóng chảy cao nhất?", a: "Đồng (Cu)", b: "Vonfram (W)", c: "Vàng (Au)", d: "Bạc (Ag)", correct: "B" },
+            { q: "Kim loại nào dẫn điện tốt nhất?", a: "Bạc (Ag)", b: "Đồng (Cu)", c: "Vàng (Au)", d: "Nhôm (Al)", correct: "A" },
+            { q: "Kim loại nào dẻo nhất?", a: "Nhôm", b: "Đồng", c: "Bạc", d: "Vàng (Au)", correct: "D" },
+            { q: "Kim loại nào tồn tại ở thể lỏng ở điều kiện thường?", a: "Thủy ngân (Hg)", b: "Natri (Na)", c: "Brom (Br)", d: "Canxi (Ca)", correct: "A" },
+            { q: "Tính khử của các kim loại K, Mg, Cu, Ag giảm dần theo thứ tự nào?", a: "K > Mg > Cu > Ag", b: "Ag > Cu > Mg > K", c: "Mg > K > Cu > Ag", d: "K > Cu > Mg > Ag", correct: "A" },
+            { q: "Kim loại nào sau đây tác dụng với dung dịch HCl sinh ra khí H2?", a: "Cu", b: "Ag", c: "Fe", d: "Au", correct: "C" },
+            { q: "Kim loại nào không phản ứng với dung dịch H2SO4 loãng?", a: "Mg", b: "Al", c: "Cu", d: "Zn", correct: "C" },
+            { q: "Phương pháp nhiệt luyện dùng để điều chế các kim loại:", a: "Đứng trước Al", b: "Đứng sau Al", c: "Tất cả kim loại", d: "Chỉ kim loại kiềm", correct: "B" },
+            { q: "Ăn mòn hóa học là quá trình:", a: "Phát sinh dòng điện", b: "Oxi hóa - khử không sinh dòng điện", c: "Chỉ có kim loại bị khử", d: "Chỉ xảy ra ở nhiệt độ thấp", correct: "B" },
+            { q: "Điều kiện để xảy ra ăn mòn điện hóa học là:", a: "Có 2 điện cực khác bản chất", b: "Cùng tiếp xúc dung dịch điện li", c: "Tiếp xúc trực tiếp hoặc gián tiếp", d: "Cả 3 điều kiện trên", correct: "D" },
+            { q: "Quặng boxit được dùng để sản xuất kim loại nào?", a: "Sắt", b: "Đồng", c: "Nhôm", d: "Kẽm", correct: "C" },
+            { q: "Hợp kim là:", a: "Chất tinh khiết", b: "Dung dịch rắn của nhiều nguyên tố", c: "Chất lỏng ở nhiệt độ thường", d: "Hợp chất vô cơ", correct: "B" },
+            { q: "Sắt tây là sắt được tráng kim loại nào để chống ăn mòn?", a: "Kẽm (Zn)", b: "Thiếc (Sn)", c: "Nhôm (Al)", d: "Đồng (Cu)", correct: "B" },
+            { q: "Tôn là sắt được tráng kim loại nào?", a: "Kẽm (Zn)", b: "Thiếc (Sn)", c: "Nhôm (Al)", d: "Crom (Cr)", correct: "A" },
+            { q: "Để bảo vệ vỏ tàu biển bằng thép, người ta gắn kim loại nào ở ngoài vỏ tàu?", a: "Đồng (Cu)", b: "Kẽm (Zn)", c: "Chì (Pb)", d: "Bạc (Ag)", correct: "B" },
+            { q: "Kim loại kiềm được điều chế chủ yếu bằng phương pháp nào?", a: "Nhiệt luyện", b: "Thủy luyện", c: "Điện phân nóng chảy", d: "Điện phân dung dịch", correct: "C" }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let detector;
+        let isPlaying = false;
+        let currentAction = null;
+        let actionStartTime = 0;
+        let answered = false;
+        const HOLD_TIME = 2000; // 2 giây
+
+        const video = document.getElementById('webcam');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const loading = document.getElementById('loading');
+
+        // Audio Context cho hiệu ứng âm thanh
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            if (type === 'correct') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+            } else if (type === 'incorrect') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+                gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            }
+        }
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+            document.getElementById(id).classList.add('active-screen');
+        }
+
+        async function initAI() {
+            loading.style.display = 'flex';
+            try {
+                // Setup Camera
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } });
+                video.srcObject = stream;
+                await new Promise((resolve) => { video.onloadedmetadata = resolve; });
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+
+                // Load TFJS Model
+                const model = faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh;
+                const detectorConfig = { runtime: 'tfjs', refineLandmarks: false };
+                detector = await faceLandmarksDetection.createDetector(model, detectorConfig);
+
+                loading.style.display = 'none';
+                return true;
+            } catch (error) {
+                alert('Lỗi truy cập Camera hoặc tải mô hình: ' + error.message);
+                loading.style.display = 'none';
+                return false;
+            }
+        }
+
+        async function startGame() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            if (!detector) {
+                const success = await initAI();
+                if (!success) return;
+            }
+            
+            currentQuestion = 0;
+            score = 0;
+            isPlaying = true;
+            showScreen('game-screen');
+            loadQuestion();
+            detectLoop();
+        }
+
+        function loadQuestion() {
+            answered = false;
+            currentAction = null;
+            resetOptions();
+            
+            const q = questions[currentQuestion];
+            document.getElementById('question-text').innerText = `Câu ${currentQuestion + 1}: ${q.q}`;
+            document.querySelector('#opt-A .text').innerText = `A. ${q.a}`;
+            document.querySelector('#opt-B .text').innerText = `B. ${q.b}`;
+            document.querySelector('#opt-C .text').innerText = `C. ${q.c}`;
+            document.querySelector('#opt-D .text').innerText = `D. ${q.d}`;
+            
+            document.getElementById('progress-text').innerText = `Câu: ${currentQuestion + 1} / 20`;
+            document.getElementById('score-text').innerText = `Điểm: ${score}`;
+        }
+
+        function resetOptions() {
+            ['A', 'B', 'C', 'D'].forEach(opt => {
+                const el = document.getElementById(`opt-${opt}`);
+                el.className = 'option';
+                document.getElementById(`fill-${opt}`).style.width = '0%';
+            });
+        }
+
+        async function detectLoop() {
+            if (!isPlaying) return;
+
+            const faces = await detector.estimateFaces(video);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (faces.length > 0 && !answered) {
+                const keypoints = faces[0].keypoints;
+                drawMesh(keypoints);
+                processPose(keypoints);
+            } else {
+                currentAction = null;
+                resetFills();
+            }
+
+            requestAnimationFrame(detectLoop);
+        }
+
+        function drawMesh(keypoints) {
+            ctx.fillStyle = '#3b82f6';
+            for (let i = 0; i < keypoints.length; i++) {
+                const x = keypoints[i].x;
+                const y = keypoints[i].y;
+                ctx.beginPath();
+                ctx.arc(x, y, 1, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+        }
+
+        function processPose(keypoints) {
+            // Tìm Box bao quanh khuôn mặt
+            const xs = keypoints.map(p => p.x);
+            const ys = keypoints.map(p => p.y);
+            const minX = Math.min(...xs); const maxX = Math.max(...xs);
+            const minY = Math.min(...ys); const maxY = Math.max(...ys);
+
+            const noseX = keypoints[1].x;
+            const noseY = keypoints[1].y;
+
+            // Tính tỉ lệ vị trí mũi so với khung mặt
+            const horizRatio = (noseX - minX) / (maxX - minX);
+            const vertRatio = (noseY - minY) / (maxY - minY);
+
+            let detectedAction = null;
+
+            // Chú ý: Camera đã bị lật (Mirror) bằng CSS, nhưng tọa độ JS lấy từ video gốc.
+            // Khi người dùng quay mặt sang TRÁI của họ, mũi di chuyển sang PHẢI của ảnh gốc -> noseX tăng -> horizRatio > 0.65
+            if (horizRatio > 0.65) detectedAction = 'A';       // Quay/Nghiêng trái
+            else if (horizRatio < 0.35) detectedAction = 'B';  // Quay/Nghiêng phải
+            else if (vertRatio < 0.35) detectedAction = 'C';   // Ngẩng lên
+            else if (vertRatio > 0.65) detectedAction = 'D';   // Cúi xuống
+
+            handleAction(detectedAction);
+        }
+
+        function handleAction(action) {
+            if (!action) {
+                currentAction = null;
+                resetFills();
+                document.querySelectorAll('.option').forEach(el => el.classList.remove('hovered'));
+                return;
+            }
+
+            if (currentAction !== action) {
+                currentAction = action;
+                actionStartTime = Date.now();
+                document.querySelectorAll('.option').forEach(el => el.classList.remove('hovered'));
+                document.getElementById(`opt-${action}`).classList.add('hovered');
+                resetFills();
+            } else {
+                const elapsed = Date.now() - actionStartTime;
+                const progress = Math.min((elapsed / HOLD_TIME) * 100, 100);
+                document.getElementById(`fill-${action}`).style.width = `${progress}%`;
+
+                if (elapsed >= HOLD_TIME) {
+                    selectAnswer(action);
+                }
+            }
+        }
+
+        function resetFills() {
+            ['A', 'B', 'C', 'D'].forEach(opt => {
+                document.getElementById(`fill-${opt}`).style.width = '0%';
+            });
+        }
+
+        function selectAnswer(selected) {
+            answered = true;
+            resetFills();
+            const q = questions[currentQuestion];
+            const correctOpt = q.correct;
+
+            document.getElementById(`opt-${correctOpt}`).classList.add('correct');
+
+            if (selected === correctOpt) {
+                score += 10;
+                playSound('correct');
+            } else {
+                document.getElementById(`opt-${selected}`).classList.add('incorrect');
+                playSound('incorrect');
+            }
+
+            document.getElementById('score-text').innerText = `Điểm: ${score}`;
+
+            setTimeout(() => {
+                currentQuestion++;
+                if (currentQuestion < questions.length) {
+                    loadQuestion();
+                } else {
+                    endGame();
+                }
+            }, 2000);
+        }
+
+        function endGame() {
+            isPlaying = false;
+            document.getElementById('final-score').innerText = score;
+            
+            let rank = "";
+            let color = "";
+            if (score >= 180) { rank = "Nhà Hóa Học 🏆"; color = "#22c55e"; }
+            else if (score >= 140) { rank = "Học Sinh Giỏi 🌟"; color = "#3b82f6"; }
+            else if (score >= 100) { rank = "Khá 👍"; color = "#eab308"; }
+            else { rank = "Cần Ôn Tập 📚"; color = "#ef4444"; }
+
+            const rankEl = document.getElementById('final-rank');
+            rankEl.innerText = rank;
+            rankEl.style.color = color;
+
+            showScreen('result-screen');
+            // Tắt stream camera
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+            }
+        }
+    </script>
 </body>
 </html>
