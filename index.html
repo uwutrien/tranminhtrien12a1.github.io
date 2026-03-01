@@ -12,96 +12,59 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
 
         :root {
-            --bg: #0f172a;
-            --card: #1e293b;
-            --primary: #38bdf8;
-            --correct: #22c55e;
-            --wrong: #ef4444;
-            --text: #f1f5f9;
+            --bg: #0f172a; --card: #1e293b; --primary: #38bdf8;
+            --correct: #22c55e; --wrong: #ef4444; --text: #f1f5f9;
         }
 
         body {
-            margin: 0; padding: 0;
-            background: var(--bg);
-            color: var(--text);
-            font-family: 'Inter', sans-serif;
-            display: flex; justify-content: center; align-items: center;
-            height: 100vh; overflow: hidden;
+            margin: 0; padding: 0; background: var(--bg); color: var(--text);
+            font-family: 'Inter', sans-serif; display: flex; justify-content: center;
+            align-items: center; height: 100vh; overflow: hidden;
         }
 
-        .screen {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            width: 90%; max-width: 800px;
-            text-align: center;
-            animation: fadeIn 0.4s ease-out;
-        }
-
+        .screen { display: none; flex-direction: column; align-items: center; width: 90%; max-width: 800px; text-align: center; animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .active { display: flex; }
 
-        h1 { font-size: 2rem; color: var(--primary); margin-bottom: 5px; letter-spacing: 1px; }
-        .info { font-size: 1.1rem; color: #94a3b8; margin-bottom: 20px; }
+        h1 { font-size: 1.8rem; color: var(--primary); margin-bottom: 5px; text-transform: uppercase; }
+        .info { font-size: 1.1rem; color: #94a3b8; margin-bottom: 15px; }
 
         .btn {
-            background: var(--primary);
-            color: #000; border: none;
-            padding: 12px 35px; font-size: 1.1rem; font-weight: 700;
-            border-radius: 12px; cursor: pointer;
-            transition: 0.2s; margin-top: 20px;
+            background: var(--primary); color: #000; border: none; padding: 12px 40px;
+            font-size: 1.1rem; font-weight: 700; border-radius: 12px; cursor: pointer; margin-top: 15px;
+            transition: 0.2s;
         }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4); }
+        .btn:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(56, 189, 248, 0.4); }
 
         .game-header { width: 100%; display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; }
         
         .cam-wrapper {
-            position: relative;
-            width: 200px; height: 140px;
-            border: 2px solid #334155;
-            border-radius: 15px; overflow: hidden;
-            background: #000; transition: all 0.3s;
+            position: relative; width: 180px; height: 130px; border: 2px solid #334155;
+            border-radius: 15px; overflow: hidden; background: #000; transition: 0.3s;
         }
-        .cam-active { border-color: var(--primary); box-shadow: 0 0 20px rgba(56, 189, 248, 0.3); }
-        
+        .cam-active { border-color: var(--primary); box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); }
         video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
 
         .question-container {
-            background: var(--card);
-            padding: 20px; border-radius: 15px;
-            width: 100%; margin: 15px 0;
-            font-size: 1.25rem; min-height: 50px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-            border-left: 5px solid var(--primary);
+            background: var(--card); padding: 25px; border-radius: 15px; width: 100%;
+            margin: 15px 0; font-size: 1.3rem; min-height: 60px; border-left: 6px solid var(--primary);
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); text-align: left;
         }
 
-        .options {
-            display: grid; grid-template-columns: 1fr 1fr;
-            gap: 12px; width: 100%;
-        }
-
+        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; }
         .opt {
-            background: var(--card);
-            padding: 16px; border-radius: 12px;
-            border: 2px solid #334155;
-            font-size: 1.05rem; position: relative;
-            transition: all 0.2s ease; text-align: left;
-            overflow: hidden; cursor: default;
+            background: var(--card); padding: 18px; border-radius: 12px; border: 2px solid #334155;
+            font-size: 1.1rem; position: relative; transition: all 0.2s; text-align: left; overflow: hidden;
         }
-        .opt.hovered { border-color: #fbbf24; transform: scale(1.03); background: #1e293b; }
+        .opt.hovered { border-color: #fbbf24; background: #1e293b; transform: translateY(-3px); }
         .opt.correct { background: var(--correct) !important; border-color: var(--correct) !important; color: white; }
         .opt.wrong { background: var(--wrong) !important; border-color: var(--wrong) !important; color: white; }
 
-        .progress-bar {
-            position: absolute; bottom: 0; left: 0;
-            height: 4px; background: #fbbf24; width: 0%;
-            transition: width 0.05s linear;
-        }
+        .progress-bar { position: absolute; bottom: 0; left: 0; height: 5px; background: #fbbf24; width: 0%; transition: width 0.05s linear; }
 
         #loading-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg); display: flex; flex-direction: column;
-            justify-content: center; align-items: center; z-index: 100;
+            background: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100;
         }
     </style>
 </head>
@@ -109,16 +72,16 @@
 
     <div id="loading-overlay">
         <div style="font-size: 1.5rem; font-weight: bold;">Đang tải AI & Âm thanh...</div>
-        <div id="status" style="margin-top: 10px; color: var(--primary);">Vui lòng chờ giây lát</div>
+        <div style="color: var(--primary); margin-top: 10px;">Vui lòng chờ giây lát</div>
     </div>
 
     <div id="start-screen" class="screen active">
-        <h1>GAME HÓA HỌC: KIM LOẠI</h1>
+        <h1>HÓA HỌC 12: KIM LOẠI</h1>
         <div class="info">Học sinh: <b>Trần Minh Triển</b> - Lớp: <b>12A1</b></div>
         <div style="background: #1e293b; padding: 20px; border-radius: 15px; text-align: left; font-size: 0.95rem; line-height: 1.6;">
-            🔹 <b>Nghiêng Trái:</b> Đáp án A &nbsp; | &nbsp; 🔹 <b>Nghiêng Phải:</b> Đáp án B<br>
-            🔹 <b>Ngẩng Lên:</b> Đáp án C &nbsp;&nbsp;&nbsp; | &nbsp; 🔹 <b>Cúi Xuống:</b> Đáp án D<br>
-            ⏱️ <b>Thời gian:</b> Giữ 0.8s để chọn. Có âm thanh phản hồi!
+            ⬅️ <b>Nghiêng Trái:</b> Đáp án A &nbsp; | &nbsp; ➡️ <b>Nghiêng Phải:</b> Đáp án B<br>
+            ⬆️ <b>Ngẩng Lên:</b> Đáp án C &nbsp;&nbsp;&nbsp; | &nbsp; ⬇️ <b>Cúi Xuống:</b> Đáp án D<br>
+            🛡️ <b>Chống nhiễu:</b> Ngồi yên máy sẽ không tự chọn. Giữ 0.9s để chốt.
         </div>
         <button class="btn" onclick="startApp()">BẮT ĐẦU CHƠI</button>
     </div>
@@ -128,13 +91,8 @@
             <span id="q-count">Câu: 1/20</span>
             <span id="score" style="color: #fbbf24;">0 Điểm</span>
         </div>
-        
-        <div class="cam-wrapper" id="cam-box">
-            <video id="input_video"></video>
-        </div>
-
-        <div id="question" class="question-container">Đang chuẩn bị...</div>
-
+        <div class="cam-wrapper" id="cam-box"><video id="input_video"></video></div>
+        <div id="question" class="question-container">Đang tải câu hỏi...</div>
         <div class="options">
             <div class="opt" id="opt-A">A. <span id="txt-A"></span><div class="progress-bar" id="pb-A"></div></div>
             <div class="opt" id="opt-B">B. <span id="txt-B"></span><div class="progress-bar" id="pb-B"></div></div>
@@ -144,45 +102,35 @@
     </div>
 
     <div id="result-screen" class="screen">
-        <h1>KẾT QUẢ CUỐI CÙNG</h1>
-        <div id="final-result" style="font-size: 1.4rem; margin: 25px; line-height: 1.8;"></div>
+        <h1>HOÀN THÀNH BÀI TẬP</h1>
+        <div id="final-result" style="font-size: 1.4rem; margin: 25px; line-height: 2;"></div>
         <button class="btn" onclick="location.reload()">CHƠI LẠI</button>
     </div>
 
     <script>
-        // --- CẤU HÌNH ÂM THANH ---
+        // --- HỆ THỐNG ÂM THANH ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playSound(freq, type, duration, vol = 0.1) {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        function playSfx(freq, type, duration, vol = 0.08) {
+            const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+            osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
             gain.gain.setValueAtTime(vol, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + duration);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + duration);
         }
-
         const sfx = {
-            tick: () => playSound(600, 'sine', 0.1, 0.05),
-            correct: () => {
-                playSound(523.25, 'sine', 0.3); // Đô
-                setTimeout(() => playSound(659.25, 'sine', 0.4), 100); // Mi
-            },
-            wrong: () => playSound(150, 'sawtooth', 0.4, 0.1),
-            finish: () => {
-                [523, 659, 783, 1046].forEach((f, i) => {
-                    setTimeout(() => playSound(f, 'sine', 0.6), i * 150);
-                });
-            }
+            tick: () => playSfx(650, 'sine', 0.1),
+            right: () => { playSfx(523, 'sine', 0.2); setTimeout(()=>playSfx(659, 'sine', 0.3), 100); },
+            wrong: () => playSfx(180, 'sawtooth', 0.4, 0.1)
         };
 
         const videoElement = document.getElementById('input_video');
         const camBox = document.getElementById('cam-box');
         let currentIdx = 0, score = 0, isLocked = false, selectedKey = null, holdValue = 0;
-        const HOLD_THRESHOLD = 15; // ~0.8 giây
+        
+        // Cấu hình chống nhiễu
+        const DEADZONE = 0.14; // Ngưỡng bắt đầu nhận diện (càng cao càng lì)
+        const HOLD_REQUIRED = 18; // ~0.9 giây
 
         const questions = [
             { q: "Kim loại dẫn điện tốt nhất là?", a: "Bạc", b: "Đồng", c: "Vàng", d: "Sắt", ans: "A" },
@@ -204,16 +152,16 @@
             { q: "Cấu hình e lớp ngoài cùng của kim loại kiềm thổ?", a: "ns1", b: "ns2", c: "ns2np1", d: "ns2np2", ans: "B" },
             { q: "Kim loại lỏng ở nhiệt độ thường?", a: "Hg", b: "Pb", c: "Sn", d: "Zn", ans: "A" },
             { q: "Kim loại cứng nhất là?", a: "Fe", b: "Cr", c: "W", d: "Cu", ans: "B" },
-            { q: "Nhôm bền do có màng bảo vệ là?", a: "Al(OH)3", b: "Al2O3", c: "AlCl3", d: "Al2S3", ans: "B" }
+            { q: "Nhôm bền do có màng bảo vệ là?", a: "Al2O3", b: "Al(OH)3", c: "AlCl3", d: "Al2S3", ans: "A" }
         ];
 
         const faceMesh = new FaceMesh({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}` });
-        faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: true, minDetectionConfidence: 0.6 });
+        faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: true, minDetectionConfidence: 0.7 });
         faceMesh.onResults(onResults);
 
         const camera = new Camera(videoElement, { onFrame: async () => { await faceMesh.send({image: videoElement}); }, width: 640, height: 480 });
 
-        window.onload = () => { setTimeout(() => document.getElementById('loading-overlay').style.display = 'none', 1500); };
+        window.onload = () => { setTimeout(() => document.getElementById('loading-overlay').style.display='none', 1000); };
 
         function startApp() {
             if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -226,18 +174,15 @@
         function showQuestion() {
             if (currentIdx >= questions.length) { endGame(); return; }
             isLocked = false; selectedKey = null; holdValue = 0;
-            
+            // Xóa sạch trạng thái câu cũ
             document.querySelectorAll('.opt').forEach(el => {
                 el.className = 'opt';
                 el.querySelector('.progress-bar').style.width = '0%';
             });
-            
             const q = questions[currentIdx];
-            document.getElementById('question').innerText = `Câu ${currentIdx+1}: ${q.q}`;
-            document.getElementById('txt-A').innerText = q.a;
-            document.getElementById('txt-B').innerText = q.b;
-            document.getElementById('txt-C').innerText = q.c;
-            document.getElementById('txt-D').innerText = q.d;
+            document.getElementById('question').innerText = q.q;
+            document.getElementById('txt-A').innerText = q.a; document.getElementById('txt-B').innerText = q.b;
+            document.getElementById('txt-C').innerText = q.c; document.getElementById('txt-D').innerText = q.d;
             document.getElementById('q-count').innerText = `Câu: ${currentIdx+1}/20`;
         }
 
@@ -248,58 +193,58 @@
 
                 const lm = results.multiFaceLandmarks[0];
                 const nose = lm[1], left = lm[33], right = lm[263], top = lm[10], bot = lm[152];
+                
+                // Tính toán vị trí tương đối của mũi so với các biên khuôn mặt
                 const h = (nose.x - left.x) / (right.x - left.x);
                 const v = (nose.y - top.y) / (bot.y - top.y);
 
                 let key = null;
-                if (h < 0.38) key = 'A';
-                else if (h > 0.62) key = 'B';
-                else if (v < 0.45) key = 'C';
-                else if (v > 0.55) key = 'D';
+                // Áp dụng DEADZONE: Chỉ nhận diện khi lệch khỏi trung tâm (0.5) một khoảng nhất định
+                if (h < 0.5 - DEADZONE) key = 'A';
+                else if (h > 0.5 + DEADZONE) key = 'B';
+                else if (v < 0.5 - (DEADZONE-0.03)) key = 'C';
+                else if (v > 0.5 + (DEADZONE-0.03)) key = 'D';
 
                 if (key && key === selectedKey) {
                     holdValue++;
-                    if (holdValue % 3 === 0) sfx.tick(); // Kêu tick nhẹ khi đang giữ
-                    document.getElementById(`pb-${key}`).style.width = (holdValue / HOLD_THRESHOLD * 100) + '%';
-                    if (holdValue >= HOLD_THRESHOLD) confirmAnswer(key);
+                    if (holdValue % 4 === 0) sfx.tick();
+                    document.getElementById(`pb-${key}`).style.width = (holdValue / HOLD_REQUIRED * 100) + '%';
+                    if (holdValue >= HOLD_REQUIRED) confirmAnswer(key);
                 } else {
                     selectedKey = key; holdValue = 0;
-                    document.querySelectorAll('.opt').forEach(el => el.classList.remove('hovered'));
-                    document.querySelectorAll('.progress-bar').forEach(el => el.style.width = '0%');
+                    document.querySelectorAll('.opt').forEach(el => {
+                        el.classList.remove('hovered');
+                        el.querySelector('.progress-bar').style.width = '0%';
+                    });
                     if (key) document.getElementById(`opt-${key}`).classList.add('hovered');
                 }
-            } else {
-                camBox.classList.remove('cam-active');
-            }
+            } else { camBox.classList.remove('cam-active'); }
         }
 
         function confirmAnswer(key) {
             isLocked = true;
             const ans = questions[currentIdx].ans;
-            document.getElementById(`opt-${key}`).classList.remove('hovered');
+            document.querySelectorAll('.opt').forEach(el => el.classList.remove('hovered'));
             
             if (key === ans) {
                 document.getElementById(`opt-${key}`).classList.add('correct');
-                score += 10;
-                sfx.correct();
+                score += 10; sfx.right();
             } else {
                 document.getElementById(`opt-${key}`).classList.add('wrong');
                 document.getElementById(`opt-${ans}`).classList.add('correct');
                 sfx.wrong();
             }
-            
             document.getElementById('score').innerText = `${score} Điểm`;
             setTimeout(() => { currentIdx++; showQuestion(); }, 1200);
         }
 
         function endGame() {
-            sfx.finish();
             document.getElementById('game-screen').classList.remove('active');
             document.getElementById('result-screen').classList.add('active');
-            let rank = score >= 180 ? "XUẤT SẮC 🏆" : (score >= 140 ? "GIỎI 🥇" : "KHÁ 👍");
+            let r = score >= 180 ? "XUẤT SẮC 🏆" : (score >= 140 ? "GIỎI 🥇" : "KHÁ 👍");
             document.getElementById('final-result').innerHTML = `
                 Điểm số: <b>${score}/200</b><br>
-                Xếp loại: <b>${rank}</b>
+                Xếp loại: <b>${r}</b>
             `;
             camera.stop();
         }
