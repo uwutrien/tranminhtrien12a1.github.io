@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Game Hóa học 12</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background:linear-gradient(135deg,#0f172a,#020617);
+color:white;
+text-align:center;
+}
+
+header{
+padding:20px;
+}
+
+h1{
+margin:0;
+color:#22c55e;
+}
+
+.quiz{
+max-width:800px;
+margin:auto;
+padding:20px;
+}
+
+.question{
+font-size:22px;
+margin:20px 0;
+}
+
+.answers{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:15px;
+}
+
+.answer{
+padding:20px;
+border-radius:12px;
+font-size:18px;
+cursor:pointer;
+transition:0.2s;
+}
+
+.answer:hover{
+transform:scale(1.05);
+}
+
+.A{background:#ef4444;}
+.B{background:#3b82f6;}
+.C{background:#eab308;}
+.D{background:#a855f7;}
+
+.correct{
+background:#16a34a !important;
+}
+
+.wrong{
+background:#dc2626 !important;
+}
+
+#camera{
+position:fixed;
+top:10px;
+right:10px;
+width:220px;
+border-radius:10px;
+border:2px solid white;
+}
+
+.status{
+margin-top:10px;
+color:#38bdf8;
+}
+
+.start{
+margin-top:30px;
+padding:15px 25px;
+font-size:18px;
+border:none;
+border-radius:10px;
+background:#22c55e;
+cursor:pointer;
+}
+
+.result{
+font-size:28px;
+margin-top:30px;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>Game Hóa học 12 – Đại cương kim loại</h1>
+<div>Học sinh: Trần Minh Triển | Lớp 12A1</div>
+</header>
+
+<div class="quiz">
+
+<div id="start">
+<button class="start" onclick="startGame()">Bắt đầu</button>
+</div>
+
+<div id="game" style="display:none">
+
+<div id="progress"></div>
+
+<div class="question" id="question"></div>
+
+<div class="answers">
+
+<div class="answer A" id="A"></div>
+<div class="answer B" id="B"></div>
+<div class="answer C" id="C"></div>
+<div class="answer D" id="D"></div>
+
+</div>
+
+<div class="status" id="status">Đang nhận diện khuôn mặt...</div>
+
+</div>
+
+<div id="result" style="display:none" class="result"></div>
+
+</div>
+
+<video id="camera" autoplay muted></video>
+
+<script>
+
+const questions=[
+{q:"Kim loại nào phản ứng mạnh với nước ở nhiệt độ thường?",A:"Fe",B:"Na",C:"Cu",D:"Ag",c:"B"},
+{q:"Liên kết kim loại là gì?",A:"Lực hút ion kim loại và electron tự do",B:"Liên kết cộng hóa trị",C:"Liên kết ion",D:"Liên kết hidro",c:"A"},
+{q:"Kim loại thường đóng vai trò gì trong phản ứng?",A:"Chất khử",B:"Chất oxi hóa",C:"Dung môi",D:"Chất xúc tác",c:"A"},
+{q:"Kim loại dẫn điện tốt nhất?",A:"Cu",B:"Ag",C:"Fe",D:"Al",c:"B"}
+];
+
+let index=0;
+let score=0;
+let selected=null;
+
+function startGame(){
+
+document.getElementById("start").style.display="none";
+document.getElementById("game").style.display="block";
+
+showQuestion();
+
+}
+
+function showQuestion(){
+
+let q=questions[index];
+
+document.getElementById("progress").innerText=
+`Câu ${index+1}/${questions.length} | Điểm: ${score}`;
+
+document.getElementById("question").innerText=q.q;
+
+["A","B","C","D"].forEach(k=>{
+document.getElementById(k).innerText=k+". "+q[k];
+document.getElementById(k).classList.remove("correct","wrong");
+});
+
+}
+
+function answer(letter){
+
+let q=questions[index];
+
+if(letter===q.c){
+
+document.getElementById(letter).classList.add("correct");
+score++;
+
+}else{
+
+document.getElementById(letter).classList.add("wrong");
+
+}
+
+setTimeout(()=>{
+
+index++;
+
+if(index>=questions.length){
+
+endGame();
+
+}else{
+
+showQuestion();
+
+}
+
+},2000)
+
+}
+
+function endGame(){
+
+document.getElementById("game").style.display="none";
+document.getElementById("result").style.display="block";
+document.getElementById("result").innerText=
+`Bạn trả lời đúng ${score}/${questions.length}`;
+
+}
+
+navigator.mediaDevices.getUserMedia({video:true})
+.then(stream=>{
+document.getElementById("camera").srcObject=stream;
+})
+
+const faceMesh=new FaceMesh({
+
+locateFile:(file)=>{
+return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
+}
+
+});
+
+faceMesh.setOptions({
+
+maxNumFaces:1,
+refineLandmarks:true,
+minDetectionConfidence:0.5,
+minTrackingConfidence:0.5
+
+});
+
+faceMesh.onResults(results=>{
+
+if(!results.multiFaceLandmarks)return;
+
+const lm=results.multiFaceLandmarks[0];
+
+const leftEye=lm[33];
+const rightEye=lm[263];
+const nose=lm[1];
+
+const center=(leftEye.x+rightEye.x)/2;
+
+const diff=nose.x-center;
+
+if(diff<-0.03){
+
+document.getElementById("status").innerText="Nghiêng trái";
+answer("A");
+
+}
+
+if(diff>0.03){
+
+document.getElementById("status").innerText="Nghiêng phải";
+answer("B");
+
+}
+
+});
+
+const video=document.getElementById("camera");
+
+const camera=new Camera(video,{
+
+onFrame:async()=>{
+await faceMesh.send({image:video});
+},
+
+width:320,
+height:240
+
+});
+
+camera.start();
+
+</script>
+
+</body>
+</html>
